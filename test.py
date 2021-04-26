@@ -1,0 +1,1 @@
+print('Hello 분리수거!')

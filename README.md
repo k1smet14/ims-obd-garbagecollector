@@ -1,7 +1,18 @@
-# Team.분리수거잘하조
+# 안현진
 
-***
 
-*made by* [김동우](zxcvbnm1997@hanmail.net), [김익재](ijjustin.kim@gmail.com), [송민기](thdalsrl10@gmail.com), [안현진](dkdlel0227@naver.com), [최재하](k1smet1403@gmail.com), [황정훈](https://github.com/wjdgns7712)
+### train_wandb.py
+wandb autoML 실행 코드
 
-blah blah~
+### dataloader.py
+CustomDataset 클래스만 있음
+
+### scheduler.py
+custom scheduler : CosineAnnealingWarmUpRestarts() <br>
+출처: https://gaussian37.github.io/dl-pytorch-lr_scheduler/
+
+### evaluate.py
+metric 및 validation 함수
+
+### utils.py
+save, load, submit, calculate_parameter

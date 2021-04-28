@@ -35,6 +35,8 @@ from evaluate import *
 def train(config=None):
     wandb.init(config=config)
     config = wandb.config
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    print (f"This notebook use {device}")
     
         ### Hyper parameters ###
     SEED = config.SEED
@@ -43,7 +45,7 @@ def train(config=None):
     LR = config.LR
     save_model_name = f'{config.project_name}_seed{SEED}_batch{BATCH_SIZE}'
     accumulation_step = 1
-    best_val_mIoU = 0.30
+    best_val_mIoU = 0.40
     
 
 
@@ -63,12 +65,14 @@ def train(config=None):
     test_path = dataset_path + '/test.json'
 
     train_transform = A.Compose([
-                                ToTensorV2()
-                                ])
+        A.Resize(256, 256),
+        ToTensorV2()
+    ])
 
     test_transform = A.Compose([
-                               ToTensorV2()
-                               ])
+        A.Resize(256, 256),
+        ToTensorV2()
+    ])
 
     train_dataset = CustomDataLoader(data_dir=train_path, mode='train', transform=train_transform)
     val_dataset = CustomDataLoader(data_dir=val_path, mode='val', transform=test_transform)
@@ -115,7 +119,7 @@ def train(config=None):
                 optimizer.zero_grad()
         
             avg_loss += loss.item() / batch_count
-            print(f"\rEpoch:{epoch:3d}  step:{step:3d}/{batch_count-1}  time:{time.time() - start:.3f}  LR:{LR:.6f}", end='')
+            print(f"\rEpoch:{epoch:3d}  step:{step:3d}/{batch_count-1}  time:{time.time() - start:.3f}  LR:{scheduler.get_lr()[0]:.6f}", end='')
             
         scheduler.step()
         val_loss, val_mIoU = validation(model, val_loader, criterion, device)
@@ -128,7 +132,7 @@ def train(config=None):
 
 
 def main():
-    project_name = 'se_resnext50_32x4d'
+    project_name = 'resnext50 batch_size 탐색'
     count = 20
 
     sweep_config = {
@@ -142,19 +146,22 @@ def main():
     
     parameters_dict = {
         'SEED': {
-            'distribution': 'uniform'
-            'max': 9999
-            'min': 1
+            'distribution': 'int_uniform',
+            'max': 9999,
+            'min': 1,
+        },
+        'EPOCHS': {
+            'value': 18
         },
         'BATCH_SIZE': {
-            'values': [4,8,16]
+            'values': [4,24,32]
         },
         'LR': {
             'value': (1e-4,2e-6)
         },
         'scheduler': {
             'value': None
-        }
+        },
         'project_name':{
             'value': project_name
         },

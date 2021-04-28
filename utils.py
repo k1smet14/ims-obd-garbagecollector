@@ -37,7 +37,7 @@ import requests
 import os
 from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
 
-def submit(file_path = '', desc=""):
+def submit(file_path = '', desc="", key='my'):
     url = urlparse('http://ec2-13-124-161-225.ap-northeast-2.compute.amazonaws.com:8000/api/v1/competition/28/presigned_url/?description=&hyperparameters={%22training%22:{},%22inference%22:{}}')
     qs = dict(parse_qsl(url.query))
     qs['description'] = desc
@@ -45,9 +45,15 @@ def submit(file_path = '', desc=""):
     url = urlunparse(parts)
 
     print(url)
-    headers = {
-        'Authorization': 'Bearer 0f527e16e65386933b5320164e9f30523c13251c' #user_key
-    }
+    if(key=='my'):
+        headers = {
+            'Authorization': 'Bearer 0f527e16e65386933b5320164e9f30523c13251c'
+            # 정훈님: 8329ef03f9b3034136a05156b5690fb41e43f0df
+        }
+    elif(key=='정훈님'):
+        headers = {
+            'Authorization': 'Bearer 8329ef03f9b3034136a05156b5690fb41e43f0df'
+        }
     res = requests.get(url, headers=headers)
     print(res.text)
     data = json.loads(res.text)

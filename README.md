@@ -4,7 +4,7 @@
 baseline 실험 코드
 
 ### [code]DL3P+resnext50_resize_iouCE_swsl_classMix.ipynb
-(4.29) classmix 구현 코드
+(4.29) classmix 구현 코드 : MixDataset사용, classMix함수 구현, train부분 코드 약간 수정
 
 ### train_wandb.py
 wandb autoML 실행 코드 (1차 수정)

@@ -18,21 +18,18 @@ Fixed parameters
 |0.4|9|0.1757|0.3173|0.5133|0.6158|
 |0.6|7|0.2161|0.3362|0.5218|0.6082|
 - observations
-There are minor LB(less than 0.0010) score difference in between <br>
-different values of brightness. However, it's not worth finding optimal <br>
+There are minor LB(less than 0.0010) score difference in between 
+different values of brightness. However, it's not worth finding optimal
 parameter.<br>
 - thought
-setting brightness = x, randomly applies brightness transformation to images<br>
-what if I set up a parameter to have the same effect throughout all images?
+setting brightness = x, randomly applies brightness transformation to images what if I set up a parameter to have the same effect throughout all images?
 
 ## failures
--log(DiceLoss) 
-definitely hard to train <br>
-- thought
-consider mixture of cross entropy and dice, with non-equal weights <br>
-something like 0.7ce - 0.3log(dice)
+model with loss function, -log(DiceLoss), is hard to train <br>
+- thought <br>
+consider mixture of cross entropy and dice, with non-equal weights something like 0.7ce - 0.3log(dice)
 
 ## Overall thoughts
-so far all the parameter tuning barely affects the performance <br>
-the larger model appears to perform better, thus try efficientnet <br>
-unclear which validation measure to evaluate the performance of the model on unseen data
+- so far all the parameter tuning barely affects the performance <br>
+- the larger model appears to perform better, thus try efficientnet <br>
+- unclear which validation measure to evaluate the performance of the model on unseen data

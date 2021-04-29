@@ -2,7 +2,6 @@ import torch
 import numpy as np
 from utils import *
 
-
 def validation(model, data_loader, criterion, device):
     model.eval()
     with torch.no_grad():
@@ -17,7 +16,7 @@ def validation(model, data_loader, criterion, device):
             total_loss += loss
             cnt += 1
             
-            outputs = torch.argmax(outputs.squeeze(), dim=1).detach().cpu().numpy()
+            outputs = torch.argmax(outputs, dim=1).detach().cpu().numpy()
 
             mIoU = label_accuracy_score(masks.detach().cpu().numpy(), outputs, n_class=12)
             mIoU_list.append(mIoU)
@@ -26,12 +25,12 @@ def validation(model, data_loader, criterion, device):
     model.train()
     return avrg_loss, np.mean(mIoU_list)
 
-
 def validation2(model, data_loader, criterion, device, n_class=12):
     model.eval()
     with torch.no_grad():
         total_loss = 0
         cnt = 0
+        mIoU_list = []
         hist = np.zeros((n_class, n_class))
         for step, (images, masks) in enumerate(data_loader):
             images, masks = images.to(device), masks.long().to(device)            
@@ -41,14 +40,17 @@ def validation2(model, data_loader, criterion, device, n_class=12):
             total_loss += loss
             cnt += 1
             
-            outputs = torch.argmax(outputs.squeeze(), dim=1).detach().cpu().numpy()
+            outputs = torch.argmax(outputs, dim=1).detach().cpu().numpy()
             
             hist = add_hist(hist, masks.detach().cpu().numpy(), outputs, n_class=n_class)
+
+            mIoU = label_accuracy_score(masks.detach().cpu().numpy(), outputs, n_class=n_class)
+            mIoU_list.append(mIoU)
             
         avrg_loss = total_loss / cnt
-        mIoU = mIoU_score(hist)
+        miou2 = mIoU_score(hist)
     model.train()
-    return avrg_loss, mIoU
+    return avrg_loss, np.mean(mIoU_list), miou2
 
 
 def mIoU_score(hist):

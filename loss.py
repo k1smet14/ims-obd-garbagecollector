@@ -3,8 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 from evaluate import *
+import numpy as np
+from smp.segmentation_models_pytorch.losses.dice import DiceLoss
     
-        
 class FocalLoss(nn.Module):
     def __init__(self, weight=None, gamma=2.0, reduction='mean'):
         nn.Module.__init__(self)
@@ -21,7 +22,6 @@ class FocalLoss(nn.Module):
             weight=self.weight,
             reduction=self.reduction
         )
-    
     
 class LabelSmoothingFocalLoss(nn.Module):
     def __init__(self, classes=18, gamma=2.0, smoothing=0.0, weight=None):
@@ -89,3 +89,17 @@ class IoU_CE_Loss(nn.Module):
         preds = torch.argmax(preds.squeeze(), dim=1).detach().cpu().numpy()
         miou = label_accuracy_score(truth.detach().cpu().numpy(), preds, n_class=self.n_class)
         return (1-miou)*self.rate + ce*(1-self.rate)
+    
+    
+class Dice_CE_Loss(nn.Module):
+    def __init__(self, dice_rate=0.4, weight=None, classes=12):
+        nn.Module.__init__(self)
+        self.n_class = classes
+        self.rate = dice_rate
+        self.ce = nn.CrossEntropyLoss(weight=weight)
+        self.dice = DiceLoss(mode='multiclass')
+
+    def forward(self, preds, truth):
+        ce = self.ce(preds, truth)
+        dice = self.dice(preds, truth)
+        return ce - torch.log(dice)

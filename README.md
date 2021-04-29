@@ -23,4 +23,4 @@ metric 및 validation 함수 <br>
 save, load, submit, calculate_parameter
 
 ### loss.py
-(4.29) Focal, iou_CE, Dice_Ce
+(4.29) Focal, iou_CE, Dice_CE

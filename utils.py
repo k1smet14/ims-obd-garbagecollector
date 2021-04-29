@@ -1,8 +1,19 @@
-import numpy as np
 import os
+
+import numpy as np
 import torch
+
+from mmcv.runner import init_dist
+from mmcv.utils import Config, DictAction, get_git_hash
+
+from mmseg import __version__
+from mmseg.apis import set_random_seed, train_segmentor
+from mmseg.datasets import build_dataset
+from mmseg.models import build_segmentor
+from mmseg.utils import collect_env, get_root_logger
+
 import segmentation_models_pytorch as smp
-from .swin_transformer import SwinTransformer
+
 
 def save_model(model, saved_dir="model", file_name="default.pt"):
     if not os.path.exists(saved_dir):
@@ -17,43 +28,23 @@ def load_model(model, device, saved_dir="model", file_name="default.pt"):
     model.load_state_dict(state_dict=checkpoint['model'])
     print("load success")
 
-def get_model(args,img_size,classes=12):
+def get_model(args,classes=12):
     if args.network.startswith('swin'):
+        repo_root='/opt/ml/p3-ims-obd-garbagecollector'
         if args.network[-1] == 's':
-            return SwinTransformer(img_size=img_size, # useage
-                                patch_size=4, # 4
-                                in_chans=3, # 3
-                                num_classes=classes, # useage
-                                embed_dim=96, # yaml
-                                depths=[ 2, 2, 18, 2 ], # yaml
-                                num_heads=[ 3, 6, 12, 24 ], # yaml
-                                window_size=7, # 7, yaml
-                                mlp_ratio=4, # 4
-                                qkv_bias=True, # True
-                                qk_scale=None, # None
-                                drop_rate=0.0, # 0.0
-                                drop_path_rate=0.3, # 0.1, yaml
-                                ape=False, # False
-                                patch_norm=True, # True
-                                use_checkpoint=config.TRAIN.USE_CHECKPOINT) # Useage
-            return SwinTransformer(img_size=img_size, # useage
-                                patch_size=4, # 4
-                                in_chans=3, # 3
-                                num_classes=classes, # useage
-                                embed_dim=128, # yaml
-                                depths=[ 2, 2, 18, 2 ], # yaml
-                                num_heads=[ 4, 8, 16, 32 ], # yaml
-                                window_size=7, # 7, yaml
-                                mlp_ratio=4, # 4
-                                qkv_bias=True, # True
-                                qk_scale=None, # None
-                                drop_rate=0.0, # 0.0
-                                drop_path_rate=0.5, # 0.1, yaml
-                                ape=False, # False
-                                patch_norm=True, # True
-                                use_checkpoint=config.TRAIN.USE_CHECKPOINT) # Useage
-        else
-            return
+            cfg = Config.fromfile(os.path.join(repo_root,'swin/configs/swin/upernet_swin_small_patch4_window7_512x512_160k_ade20k.py'))
+            cfg.model.pretrained=os.path.join(repo_root,'swin_weight/swin_small_patch4_window7_224.pth')
+
+        elif args.network[-1] == 'b':
+            cfg = Config.fromfile(os.path.join(repo_root,'swin/configs/swin/upernet_swin_base_patch4_window7_512x512_160k_ade20k.py'))
+            cfg.model.pretrained=os.path.join(repo_root,'swin_weight/swin_base_patch4_window12_384_22k.pth')
+        else:
+            cfg = Config.fromfile(os.path.join(repo_root,'swin/configs/swin/upernet_swin_tiny_patch4_window7_512x512_160k_ade20k.py'))
+            cfg.model.pretrained=os.path.join(repo_root,'swin_weight/swin_tiny_patch4_window7_224.pth')
+
+        cfg.model.backbone.use_checkpoint=True
+        return build_segmentor(cfg.model,train_cfg=None,
+         test_cfg=None)
     elif args.network == 'labv3p':
         return smp.DeepLabV3Plus(
         encoder_name=args.backbone_name,

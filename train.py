@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 import segmentation_models_pytorch as smp
-
+import torch.distributed as dist
 from pycocotools.coco import COCO
 import cv2
 import torchvision
@@ -22,12 +22,11 @@ from albumentations.pytorch import ToTensorV2
 
 import matplotlib.pyplot as plt
 from torch.cuda.amp import GradScaler, autocast
-
+from mmcv.parallel import MMDataParallel
 from utils import *
 from dataloader import *
 from scheduler import *
 from evaluate import *
-
 
 def train(config=None):
     
@@ -85,22 +84,14 @@ def train(config=None):
                            ])
     train_dataset = CustomDataLoader(data_dir=train_path, mode='train', transform=train_transform)
     val_dataset = CustomDataLoader(data_dir=val_path, mode='val', transform=val_transform)
-    # test_dataset = CustomDataLoader(data_dir=test_path, mode='test', transform=test_transform)
-
+    
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=2, drop_last=True)
     val_loader = torch.utils.data.DataLoader(dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
-    # test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=4)
-
+    
      ### Model ###    
-    model = smp.DeepLabV3Plus(
-        encoder_name=args.backbone_name,
-        encoder_weights='imagenet', 
-        classes=12
-    ).to(device)
-    
-    
-    
-    
+    model = get_model(args)
+    model = model.to(device)
+
         ### Train ###
     criterion = nn.CrossEntropyLoss()
     
@@ -110,10 +101,22 @@ def train(config=None):
         optimizer = torch.optim.SGD(model.parameters(),lr=LR)
     elif OPTIMIZER == 'rmsprop':
         optimizer = torch.optim.RMSprop(model.parameters(),lr=LR)
+    elif OPTIMIZER == 'adamw':
+        optimizer = torch.optim.AdamW(model.parameters(),lr=LR)
     
-    scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=EPOCHS, eta_max=Eta,  T_up=2, gamma=0.5)
+    scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=EPOCHS, eta_max=Eta,  T_up=100, gamma=0.5)
     scaler = GradScaler()
+    img_metas =[[{
+        'img_shape': (img_size, img_size, 3),
+        'ori_shape': (img_size, img_size, 3),
+        'pad_shape': (img_size, img_size, 3),
+        'filename': '<demo>.png',
+        'scale_factor': 1.0,
+        'flip': False,
+                'flip_direction': 'horizontal'
+            }]]
     print("Start training..")
+    
     for epoch in range(EPOCHS):
         epoch+=1
         avg_loss = 0
@@ -122,23 +125,34 @@ def train(config=None):
         for step, (images, masks) in enumerate(train_loader):
             start = time.time()
             images, masks = images.to(device), masks.long().to(device)
-
-            with autocast():
-                output = model(images)
+            
+            if args.network.startswith('swin'):
+                imgs = [images]
+                output = model(imgs,img_metas,return_loss=False)
                 loss = criterion(output, masks)
-            scaler.scale(loss).backward()
+                loss.backward()
+                if (step+1)%accumulation_step==0:
+                    optimizer.step()
+                    optimizer.zero_grad()
+            else:
+                with autocast():
+                    output = model(images)
+                    loss = criterion(output, masks)
+                scaler.scale(loss).backward()
+                if (step+1)%accumulation_step==0:
+                    scaler.step(optimizer)
+                    scaler.update()
+                    optimizer.zero_grad()
 
-            if (step+1)%accumulation_step==0:
-                scaler.step(optimizer)
-                scaler.update()
-                optimizer.zero_grad()
-        
             avg_loss += loss.item() / batch_count
             lr = scheduler.get_lr()[0]
             print(f"\rEpoch:{epoch:3d}  step:{step:3d}/{batch_count-1}  time:{time.time() - start:.3f}  LR:{lr:.6f}", end='')
             
         scheduler.step()
-        val_loss, val_mIoU = validation(model, val_loader, criterion, device)
+        if args.network.startswith('swin'):
+            val_loss, val_mIoU = validation_swin(model, val_loader, criterion, device,img_metas)
+        else:
+            val_loss, val_mIoU = validation(model, val_loader, criterion, device)
         print("val",avg_loss,val_loss,val_mIoU)
         print(f"   loss: {avg_loss:.3f}  val_loss: {val_loss:.3f}  val_mIoU:{val_mIoU:.3f}")
         if best_val_mIoU < val_mIoU:
@@ -163,18 +177,18 @@ if __name__ == '__main__':
                         default='labv3p',
                         const='labv3p',
                         nargs='?',
-                        choices=['labv3p', 'swin_s','swin_b'],
-                        help='labv3p, swin_s, swin_b(base)')
+                        choices=['labv3p', 'swin_s','swin_b','swin_t'],
+                        help='labv3p, swin_s, swin_b (base), swin_t (tiny)')
                         
     parser.add_argument('--count',type=int,default=20)
     args = parser.parse_args()
 
     config = {
         'SEED': 9,
-        'BATCH_SIZE' : 128,
-        'LR' : 1e-4,
-        'Eta_Max':1e-7,
+        'BATCH_SIZE' : 64,
+        'LR' : 1e-5,
+        'Eta_Max':1e-6,
         'EPOCHS' : 20,
-        'Optimizer': 'adam'
+        'Optimizer': 'adamw'
     }
     train(config)

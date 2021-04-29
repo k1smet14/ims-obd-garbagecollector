@@ -149,7 +149,6 @@ class EncoderDecoder(BaseSegmentor):
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """
-
         x = self.extract_feat(img)
 
         losses = dict()
@@ -213,7 +212,6 @@ class EncoderDecoder(BaseSegmentor):
 
     def whole_inference(self, img, img_meta, rescale):
         """Inference with full image."""
-
         seg_logit = self.encode_decode(img, img_meta)
         if rescale:
             seg_logit = resize(
@@ -240,7 +238,6 @@ class EncoderDecoder(BaseSegmentor):
         Returns:
             Tensor: The output segmentation map.
         """
-
         assert self.test_cfg.mode in ['slide', 'whole']
         ori_shape = img_meta[0]['ori_shape']
         assert all(_['ori_shape'] == ori_shape for _ in img_meta)
@@ -261,17 +258,19 @@ class EncoderDecoder(BaseSegmentor):
         return output
 
     def simple_test(self, img, img_meta, rescale=True):
+
         """Simple test with single image."""
         seg_logit = self.inference(img, img_meta, rescale)
-        seg_pred = seg_logit.argmax(dim=1)
-        if torch.onnx.is_in_onnx_export():
-            # our inference backend only support 4D output
-            seg_pred = seg_pred.unsqueeze(0)
-            return seg_pred
-        seg_pred = seg_pred.cpu().numpy()
-        # unravel batch dim
-        seg_pred = list(seg_pred)
-        return seg_pred
+        return seg_logit
+        # seg_pred = seg_logit.argmax(dim=1)
+        # if torch.onnx.is_in_onnx_export():
+        #     # our inference backend only support 4D output
+        #     seg_pred = seg_pred.unsqueeze(0)
+        #     return seg_pred
+        # seg_pred = seg_pred.cpu().numpy()
+        # # unravel batch dim
+        # seg_pred = list(seg_pred)
+        # return seg_pred
 
     def aug_test(self, imgs, img_metas, rescale=True):
         """Test with augmentations.
@@ -285,9 +284,10 @@ class EncoderDecoder(BaseSegmentor):
         for i in range(1, len(imgs)):
             cur_seg_logit = self.inference(imgs[i], img_metas[i], rescale)
             seg_logit += cur_seg_logit
-        seg_logit /= len(imgs)
-        seg_pred = seg_logit.argmax(dim=1)
-        seg_pred = seg_pred.cpu().numpy()
-        # unravel batch dim
-        seg_pred = list(seg_pred)
-        return seg_pred
+        return seg_logit
+        # seg_logit /= len(imgs)
+        # seg_pred = seg_logit.argmax(dim=1)
+        # seg_pred = seg_pred.cpu().numpy()
+        # # unravel batch dim
+        # seg_pred = list(seg_pred)
+        # return seg_pred

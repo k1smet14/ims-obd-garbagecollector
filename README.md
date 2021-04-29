@@ -1,21 +1,27 @@
-# 안현진
+# 송민기
 
-### [code]DL3P+resnext50_resize_iouCE.ipynb
-baseline 실험 코드
+### Swin transformer setup
+```bash
+cd swin
+pip install -e .
+apt-get install g++
+pip install mmcv-full==1.3.0 -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.7.0/index.html  #it need long time
 
-### train_wandb.py
-wandb autoML 실행 코드 (1차 수정)
+mkdir swin_weight
+cd swin_weight
+wget https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_base_patch4_window12_384_22k.pth
+wget https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_small_patch4_window7_224.pth
+wget https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth
+```
 
-### dataloader.py
-CustomDataset, get_class_weight, get_weighted_sampler
+### Swin transformer train
+```bash
+python p3-ims-obd-garbagecollector/train.py --project_name [your project name] --network [swin_t,swin_s,swin_b]
+```
 
-### scheduler.py
-custom scheduler : CosineAnnealingWarmUpRestarts() <br>
-출처: https://gaussian37.github.io/dl-pytorch-lr_scheduler/
+### TroubleShoot
+- libGL.so.1: cannot open shared object file: No such file or directory
+```bash
+apt-get install libgl1-mesa-glx
+```
 
-### evaluate.py
-metric 및 validation 함수 <br>
-배치 기준 -> 통합 mIoU 추가 (validation2)
-
-### utils.py
-save, load, submit, calculate_parameter

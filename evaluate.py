@@ -26,6 +26,29 @@ def validation(model, data_loader, criterion, device):
     model.train()
     return avrg_loss, np.mean(mIoU_list)
 
+def validation_swin(model, data_loader, criterion, device,meta):
+    model.eval()
+    with torch.no_grad():
+        total_loss = 0
+        cnt = 0
+        mIoU_list = []
+        for step, (images, masks) in enumerate(data_loader):
+            images, masks = images.to(device), masks.long().to(device)            
+            imgs = [images]
+            outputs = model(imgs,meta,return_loss=False)
+            loss = criterion(outputs, masks)
+            total_loss += loss
+            cnt += 1
+            
+            outputs = torch.argmax(outputs.squeeze(), dim=1).detach().cpu().numpy()
+
+            mIoU = label_accuracy_score(masks.detach().cpu().numpy(), outputs, n_class=12)
+            mIoU_list.append(mIoU)
+            
+        avrg_loss = total_loss / cnt
+    model.train()
+    return avrg_loss, np.mean(mIoU_list)
+
 
 def validation2(model, data_loader, criterion, device, n_class=12):
     model.eval()

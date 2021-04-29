@@ -68,17 +68,3 @@ class CustomDataLoader(Dataset):
     
     def __len__(self):
         return len(self.coco.getImgIds())
-    
-    
-    
-    
-from torch.utils.data import WeightedRandomSampler
-
-def get_class_weight(label):
-    label_unique, count = np.unique(label, return_counts=True)
-    return [1-c/sum(count) for c in count]
-
-def get_weighted_sampler(label):
-    class_w = get_class_weight(label)
-    exam_w = [class_w[e] for e in label]
-    return WeightedRandomSampler(exam_w, len(label))

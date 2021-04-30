@@ -1,5 +1,8 @@
 # 안현진
 
+### [code]SoftEnsemble.ipynb
+(4.30) 앙상블용 코드 사용하기 쉽게 작성
+
 ### [code]DL3P+resnext50_resize_iouCE.ipynb
 baseline 실험 코드
 

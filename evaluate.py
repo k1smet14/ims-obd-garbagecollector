@@ -52,6 +52,39 @@ def validation2(model, data_loader, criterion, device, n_class=12):
     model.train()
     return avrg_loss, np.mean(mIoU_list), miou2
 
+def validation3(model, data_loader, criterion, device, n_class=12):
+    model.eval()
+    with torch.no_grad():
+        total_loss = 0
+        cnt = 0
+        mIoU_list = []
+        hist = np.zeros((n_class, n_class))
+        all_iou = []
+        for step, (images, masks) in enumerate(data_loader):
+            images, masks = images.to(device), masks.long().to(device)            
+
+            outputs = model(images)
+            loss = criterion(outputs, masks)
+            total_loss += loss
+            cnt += 1
+            
+            outputs = torch.argmax(outputs, dim=1).detach().cpu().numpy()
+            
+            hist = add_hist(hist, masks.detach().cpu().numpy(), outputs)
+
+            mIoU = label_accuracy_score(masks.detach().cpu().numpy(), outputs)
+            mIoU_list.append(mIoU)
+            
+            batch_iou = batch_iou_score(masks.detach().cpu().numpy(), outputs, len(outputs))
+            all_iou.append(batch_iou)
+            
+        avrg_loss = total_loss / cnt
+        miou2 = mIoU_score(hist)
+        miou3 = np.mean(all_iou)
+        
+    model.train()
+    return avrg_loss, np.mean(mIoU_list), miou2, miou3
+
 
 def mIoU_score(hist):
     with np.errstate(divide='ignore', invalid='ignore'):
@@ -60,7 +93,7 @@ def mIoU_score(hist):
     return mean_iu
 
 
-def add_hist(hist, label_trues, label_preds, n_class):
+def add_hist(hist, label_trues, label_preds, n_class=12):
     for lt, lp in zip(label_trues, label_preds):
         hist += _fast_hist(lt.flatten(), lp.flatten(), n_class)
     return hist
@@ -83,3 +116,16 @@ def label_accuracy_score(label_trues, label_preds, n_class=12):
         )
     mean_iu = np.nanmean(iu)
     return mean_iu
+
+
+def batch_iou_score(label_trues, label_preds, batch_size, n_class=12):
+    hist = np.zeros((n_class, n_class))
+    batch_iou = 0
+    for lt, lp in zip(label_trues, label_preds):
+        hist = _fast_hist(lt.flatten(), lp.flatten(), n_class)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            iu = np.diag(hist) / (
+                hist.sum(axis=1) + hist.sum(axis=0) - np.diag(hist)
+            )
+            batch_iou += np.nanmean(iu) / batch_size
+    return batch_iou

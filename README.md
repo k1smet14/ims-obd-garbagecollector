@@ -24,6 +24,7 @@ custom scheduler : CosineAnnealingWarmUpRestarts() <br>
 metric 및 validation 함수 <br>
 배치 기준 -> 통합 mIoU 추가 (validation2) <br>
 (4.29) validation2 : 배치기준, 전체기준 mIoU 모두 계산
+(4.30) validation3 : 배치기준, 전체기준, 이미지기준 3가지 모두 mIoU 
 
 ### utils.py
 save, load, submit, calculate_parameter

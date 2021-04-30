@@ -185,7 +185,7 @@ if __name__ == '__main__':
 
     config = {
         'SEED': 9,
-        'BATCH_SIZE' : 64,
+        'BATCH_SIZE' : 16,
         'LR' : 1e-5,
         'Eta_Max':1e-6,
         'EPOCHS' : 20,

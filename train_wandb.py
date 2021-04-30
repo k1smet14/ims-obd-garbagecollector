@@ -113,7 +113,7 @@ def train(config=None):
         optimizer = torch.optim.AdamW(model.parameters(),lr=LR)
 
     flag=True
-    scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=EPOCHS, eta_max=Eta,  T_up=2, gamma=0.5)
+    scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=EPOCHS, eta_max=Eta,  T_up=100, gamma=0.5)
     scaler = GradScaler()
     img_metas =[[{
         'img_shape': (img_size, img_size, 3),
@@ -185,6 +185,13 @@ if __name__ == '__main__':
                         nargs='?',
                         choices=['resnet101', 'resnext50_32x4d'],
                         help='resnet101, resnext50_32x4d')
+    parser.add_argument('--network', type=str,
+                        default='labv3p',
+                        const='labv3p',
+                        nargs='?',
+                        choices=['labv3p', 'swin_s','swin_b','swin_t'],
+                        help='labv3p, swin_s, swin_b (base), swin_t (tiny)')
+                        
     parser.add_argument('--model_name', type=str,default='None')
     parser.add_argument('--count',type=int,default=20)
     args = parser.parse_args()
@@ -205,22 +212,22 @@ if __name__ == '__main__':
             'min': 1
         },
         'BATCH_SIZE': {
-            'values': [64]
+            'values': [8,16]
         },
         'LR': {
-            'values': [1e-4,1e-5]
+            'values': [1e-5,1e-6]
         },
         'Eta_Max':{
-            'values': [1e-6,1e-7]
+            'values': [1e-7,1e-8]
         },
         'EPOCHS':{
-            'values': [20]
+            'values': [20,40]
         },
         'Optimizer':{
-            'value': 'adam'
+            'value': 'adamw'
         },
         'IMG_SIZE':{
-            'values' : [256]
+            'values' : [512]
         },
          'project_name':{
             'value': args.project_name

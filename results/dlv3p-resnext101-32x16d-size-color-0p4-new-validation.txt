@@ -1,4 +1,0 @@
-{model_name}|{batch_size}|{num_epochs}|{learning_rate}|{num_workers}|{random_seed}
-dlv3p-resnext101-32x16d-size-color-0p4-new-validation|8|1|1e-05|4|21
-Resize(256,256)|colorjitter-brightness(0.4)
-ce|adamEpoch [1/1], Step [100/327], Loss: 1.4813Epoch [1/1], Step [200/327], Loss: 1.2897Epoch [1/1], Step [300/327], Loss: 0.96731|0.8895|0.2828|0.2943|0.4233Best performance at epoch: 1

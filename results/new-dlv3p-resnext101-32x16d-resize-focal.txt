@@ -1,0 +1,79 @@
+Any Comment : focal loss applied Code of dlv3p resnext101 32x16d 256 resized
+
+model_name                                                             | batch_size | max_epochs | learning_rate | num_workers 
+new-dlv3p-resnext101-32x16d-resize-focal                               | 8         | 20          | 1e-05        | 16 
+Resize(256,256) | colorjitter-brightness(0.4) 
+loss_function | optimizer | scheduler
+focal         | adam      | N/A 
+
+209 seconds per epoch
+saved model at epoch 10
+
+Epoch [1/20], Step [100/327], Loss: 1.6333
+Epoch [1/20], Step [200/327], Loss: 1.3126
+Epoch [1/20], Step [300/327], Loss: 1.0661
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+1    | 1.1284   | 0.1780 | 0.1963 | 0.1826
+Best performance at epoch: 1
+Epoch [2/20], Step [100/327], Loss: 0.8747
+Epoch [2/20], Step [200/327], Loss: 0.8183
+Epoch [2/20], Step [300/327], Loss: 0.6737
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+2    | 0.6873   | 0.2318 | 0.2497 | 0.3211
+Best performance at epoch: 2
+Epoch [3/20], Step [100/327], Loss: 0.5789
+Epoch [3/20], Step [200/327], Loss: 0.5173
+Epoch [3/20], Step [300/327], Loss: 0.5380
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+3    | 0.5127   | 0.2679 | 0.2790 | 0.3995
+Best performance at epoch: 3
+Epoch [4/20], Step [100/327], Loss: 0.3958
+Epoch [4/20], Step [200/327], Loss: 0.3971
+Epoch [4/20], Step [300/327], Loss: 0.3698
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+4    | 0.4244   | 0.3171 | 0.3442 | 0.4645
+Best performance at epoch: 4
+Epoch [5/20], Step [100/327], Loss: 0.3393
+Epoch [5/20], Step [200/327], Loss: 0.3112
+Epoch [5/20], Step [300/327], Loss: 0.3306
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+5    | 0.3579   | 0.3537 | 0.4044 | 0.5086
+Best performance at epoch: 5
+Epoch [6/20], Step [100/327], Loss: 0.2831
+Epoch [6/20], Step [200/327], Loss: 0.2416
+Epoch [6/20], Step [300/327], Loss: 0.2233
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+6    | 0.4455   | 0.3579 | 0.4168 | 0.5072
+Epoch [7/20], Step [100/327], Loss: 0.2635
+Epoch [7/20], Step [200/327], Loss: 0.2133
+Epoch [7/20], Step [300/327], Loss: 0.2499
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+7    | 0.2467   | 0.4005 | 0.4336 | 0.5486
+Best performance at epoch: 7
+Epoch [8/20], Step [100/327], Loss: 0.2266
+Epoch [8/20], Step [200/327], Loss: 0.2111
+Epoch [8/20], Step [300/327], Loss: 0.2333
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+8    | 0.3053   | 0.3855 | 0.4330 | 0.5382
+Epoch [9/20], Step [100/327], Loss: 0.1472
+Epoch [9/20], Step [200/327], Loss: 0.1338
+Epoch [9/20], Step [300/327], Loss: 0.1241
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+9    | 0.2499   | 0.4185 | 0.4596 | 0.5545
+Best performance at epoch: 9
+Epoch [10/20], Step [100/327], Loss: 0.1561
+Epoch [10/20], Step [200/327], Loss: 0.1331
+Epoch [10/20], Step [300/327], Loss: 0.1532
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+10    | 0.2131   | 0.4211 | 0.4595 | 0.5688
+Best performance at epoch: 10
+Epoch [11/20], Step [100/327], Loss: 0.1271
+Epoch [11/20], Step [200/327], Loss: 0.1676
+Epoch [11/20], Step [300/327], Loss: 0.0969
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+11    | 0.1987   | 0.4212 | 0.4696 | 0.5679
+Epoch [12/20], Step [100/327], Loss: 0.1225
+Epoch [12/20], Step [200/327], Loss: 0.1344
+Epoch [12/20], Step [300/327], Loss: 0.1254
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+12    | 0.4136   | 0.4110 | 0.4278 | 0.5459

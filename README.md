@@ -2,6 +2,7 @@
 
 ### [code]SoftEnsemble.ipynb
 (4.30) 앙상블용 코드 사용하기 쉽게 작성
+(5.02) scaling, TTA 앙상블 추가 (dataloader.py 업데이트 필요)
 
 ### [code]DL3P+resnext50_resize_iouCE.ipynb
 baseline 실험 코드
@@ -15,6 +16,7 @@ wandb autoML 실행 코드 (1차 수정)
 ### dataloader.py
 CustomDataset <br>
 (4.29) MixDataset 추가
+(5.02) 앙상블을 위한 EnsembleDataset 추가, weighted classMix를 위해 변수 및 함수 하나씩 
 
 ### scheduler.py
 custom scheduler : CosineAnnealingWarmUpRestarts() <br>

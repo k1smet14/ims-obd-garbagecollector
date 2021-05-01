@@ -63,7 +63,8 @@ def train(args):
         batch_size=args.batch_size,
         shuffle=True,
         num_workers=2,
-        collate_fn=collate_fn
+        collate_fn=collate_fn,
+        drop_last=True
     )
     val_loader = DataLoader(
         dataset=val_dataset,
@@ -81,16 +82,16 @@ def train(args):
     # training
     print('* Start Training...')
 
-    criterion_module = getattr(import_module("torch.nn"), args.loss)
+    #criterion_module = getattr(import_module("torch.nn"), args.loss)
     # custom loss를 사용하고 싶으면 아래처럼 사용
-    # criterion_module = getattr(import_module("loss"), args.loss)   
+    criterion_module = getattr(import_module("loss"), args.loss)   
     criterion = criterion_module()
 
     optimizer_module = getattr(import_module("torch.optim"), args.optimizer)
     optimizer = optimizer_module(params = model.parameters(), lr=args.learning_rate)
 
-    # scheduler_module = getattr(import_module("scheduler"), args.scheduler)
-    # scheduler = scheduler_module(optimizer, T_0=args.epochs, eta_max=args.max_learning_rate, T_up=2, gamma=0.5)
+    scheduler_module = getattr(import_module("scheduler"), args.scheduler)
+    scheduler = scheduler_module(optimizer, T_0=args.epochs, eta_max=args.max_learning_rate, T_up=2, gamma=0.5)
 
     best_loss = 9999999
     for epoch in range(args.epochs):
@@ -111,10 +112,11 @@ def train(args):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            #scheduler.step()
 
             if (step+1)%25==0:
-                print(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], Loss: {loss.item():.4f}') # , LR:{scheduler.get_lr()[0]:.4f}')
+                print(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], Loss: {loss.item():.4f} , LR:{scheduler.get_lr()[0]:6f}')
+
+        scheduler.step()
 
         if (epoch+1) % args.val_every == 0:
             print()
@@ -151,7 +153,7 @@ def validation(model, data_loader, criterion, device):
             total_loss += loss
             cnt += 1
             
-            outputs = torch.argmax(outputs.squeeze(), dim=1).detach().cpu().numpy()
+            outputs = torch.argmax(outputs, dim=1).detach().cpu().numpy()
 
             mIoU = label_accuracy_score(masks.detach().cpu().numpy(), outputs, n_class=12)[2]
             mIoU_list.append(mIoU)

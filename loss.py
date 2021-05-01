@@ -1,7 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
 
+# Focal Loss
 # https://discuss.pytorch.org/t/is-this-a-correct-implementation-for-focal-loss-in-pytorch/43327/8
 class FocalLoss(nn.Module):
     def __init__(self, weight=None,
@@ -22,6 +24,7 @@ class FocalLoss(nn.Module):
         )
 
 
+# LabelSmoothingLoss
 class LabelSmoothingLoss(nn.Module):
     def __init__(self, classes=3, smoothing=0.0, dim=-1):
         super(LabelSmoothingLoss, self).__init__()
@@ -39,6 +42,7 @@ class LabelSmoothingLoss(nn.Module):
         return torch.mean(torch.sum(-true_dist * pred, dim=self.dim))
 
 
+# F-1 Loss
 # https://gist.github.com/SuperShinyEyes/dcc68a08ff8b615442e3bc6a9b55a354
 class F1Loss(nn.Module):
     def __init__(self, classes=3, epsilon=1e-7):
@@ -62,6 +66,39 @@ class F1Loss(nn.Module):
         f1 = 2 * (precision * recall) / (precision + recall + self.epsilon)
         f1 = f1.clamp(min=self.epsilon, max=1 - self.epsilon)
         return 1 - f1.mean()
+
+
+# cross entropy + IoU
+def _fast_hist(label_true, label_pred, n_class):
+    mask = (label_true >= 0) & (label_true < n_class)
+    hist = np.bincount(
+        n_class * label_true[mask].astype(int) +
+        label_pred[mask], minlength=n_class ** 2).reshape(n_class, n_class)
+    return hist
+
+def label_accuracy_score(label_trues, label_preds, n_class=12):
+    hist = np.zeros((n_class, n_class))
+    for lt, lp in zip(label_trues, label_preds):
+        hist += _fast_hist(lt.flatten(), lp.flatten(), n_class)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        iu = np.diag(hist) / (
+            hist.sum(axis=1) + hist.sum(axis=0) - np.diag(hist)
+        )
+    mean_iu = np.nanmean(iu)
+    return mean_iu
+
+class IoU_CE_Loss(nn.Module):
+    def __init__(self, iou_rate=0.4, weight=None, classes=12):
+        nn.Module.__init__(self)
+        self.n_class = classes
+        self.rate = iou_rate
+        self.ce = nn.CrossEntropyLoss(weight=weight)
+
+    def forward(self, preds, truth):
+        ce = self.ce(preds, truth)
+        preds = torch.argmax(preds.squeeze(), dim=1).detach().cpu().numpy()
+        miou = label_accuracy_score(truth.detach().cpu().numpy(), preds, n_class=self.n_class)
+        return (1-miou)*self.rate + ce*(1-self.rate)
 
 
 # _criterion_entrypoints = {

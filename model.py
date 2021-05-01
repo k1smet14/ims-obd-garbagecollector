@@ -2,15 +2,18 @@ import json
 import argparse
 from easydict import EasyDict
 from importlib import import_module
+import sys
+import os
 
 import torch
 import torch.nn as nn
-import torch.optim as optim
 from torchvision import models
 from torchvision.models import vgg16
 
 from efficientunet import *
 import segmentation_models_pytorch as smp
+import torchvision.models.segmentation as seg
+
 
 class FCN8s(nn.Module):
     def __init__(self, num_classes):
@@ -115,6 +118,76 @@ class resnext50unet(nn.Module):
         return out
 
 
+
+class deeplabv3_resnext50(nn.Module):
+    def __init__(self, num_classes):
+        super(deeplabv3_resnext50, self).__init__()
+        self.model = smp.DeepLabV3Plus(
+            encoder_name='resnext50_32x4d',
+            encoder_weights='ssl',
+            classes=num_classes
+        )
+
+    def forward(self, x):
+        out = self.model(x)
+        return out
+
+
+class deeplabv3_resnext101(nn.Module):
+    def __init__(self, num_classes):
+        super(deeplabv3_resnext101, self).__init__()
+        self.model = smp.DeepLabV3Plus(
+            encoder_name='resnext101_32x4d',
+            encoder_weights='ssl',
+            classes=num_classes
+        )
+
+    def forward(self, x):
+        out = self.model(x)
+        return out
+
+class deeplabv3_efficientnet_b5(nn.Module):
+    def __init__(self, num_classes):
+        super(deeplabv3_efficientnet_b5, self).__init__()
+        self.model = smp.DeepLabV3Plus(
+            encoder_name='efficientnet-b5',
+            encoder_weights='imagenet',
+            classes=num_classes
+        )
+
+    def forward(self, x):
+        out = self.model(x)
+        return out
+
+
+class PSPNet_resnext101_32x8d(nn.Module):
+    def __init__(self, num_classes):
+        super(PSPNet_resnext101_32x8d, self).__init__()
+        self.model = smp.PSPNet(
+            encoder_name='resnext101_32x8d',
+            encoder_weights='swsl',
+            classes=num_classes
+        )
+
+    def forward(self, x):
+        out = self.model(x)
+        return out
+
+
+class FPN_efficientnet_b5(nn.Module):
+    def __init__(self, num_classes):
+        super(FPN_efficientnet_b5, self).__init__()
+        self.model = smp.FPN(
+            encoder_name='efficientnet-b4',
+            encoder_weights='imagenet',
+            classes=num_classes
+        )
+
+    def forward(self, x):
+        out = self.model(x)
+        return out
+
+
 if __name__=='__main__':
     # testing
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -129,10 +202,13 @@ if __name__=='__main__':
     with open(f'./config/{ipts.config_name}.json', 'r') as f:
         args.update(json.load(f))
 
+
     model_module = getattr(import_module("model"), args.model)
     model = model_module(num_classes=12)
     
-    x = torch.randn([1, 3, args.resize[0], args.resize[1]])
+    print(model)
+
+    x = torch.randn([2, 3, args.resize[0], args.resize[1]])
     print("input shape : ", x.shape)
     out = model(x).to(device)
     print("output shape : ", out.size())

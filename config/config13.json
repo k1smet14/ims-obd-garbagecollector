@@ -1,0 +1,24 @@
+{
+    "train_path" : "/opt/ml/input/data/train.json",
+    "val_path" : "/opt/ml/input/data/val.json",
+    "test_path" : "/opt/ml/input/data/test.json",
+
+    "save_file_name" : "deeplabv3_efficientnet_b5(pretrain)",
+    "seed" : 7,
+    "batch_size" : 8,
+    "learning_rate" : 2e-6,
+    "epochs" : 20,
+    "val_every" : 1,
+    "resize" : [256, 256],
+    "augp" : 0,
+    "num_workers" : 2,
+
+    "max_learning_rate" : 0.0001,
+
+    "augmentation" : "CustomAugmentation",
+    "dataset" : "CustomDataLoader",
+    "model" : "deeplabv3_efficientnet_b5",
+    "loss" : "IoU_CE_Loss",
+    "optimizer" : "Adam",
+    "scheduler" : "CosineAnnealingWarmUpRestarts"
+}

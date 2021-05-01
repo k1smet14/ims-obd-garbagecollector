@@ -5,6 +5,8 @@ import argparse
 from importlib import import_module
 from easydict import EasyDict
 
+import requests
+from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
 
 import albumentations as A
 import torch
@@ -92,6 +94,35 @@ def inference(args):
     print("* End infernece.")
 
 
+def submit(file_path = '', desc=""):
+    url = urlparse('http://ec2-13-124-161-225.ap-northeast-2.compute.amazonaws.com:8000/api/v1/competition/28/presigned_url/?description=&hyperparameters={%22training%22:{},%22inference%22:{}}')
+    qs = dict(parse_qsl(url.query))
+    qs['description'] = desc
+    parts = url._replace(query=urlencode(qs))
+    url = urlunparse(parts)
+
+    print(url)
+    headers = {
+        'Authorization': 'Bearer fff7af656e768f558293ce6dd0008088ea1ba6b1'
+    }
+
+    res = requests.get(url, headers=headers)
+    print(res.text)
+    data = json.loads(res.text)
+    
+    submit_url = data['url']
+    body = {
+        'key':'app/Competitions/000028/Users/{}/Submissions/{}/output.csv'.format(str(data['submission']['user']).zfill(8),str(data['submission']['local_id']).zfill(4)),
+        'x-amz-algorithm':data['fields']['x-amz-algorithm'],
+        'x-amz-credential':data['fields']['x-amz-credential'],
+        'x-amz-date':data['fields']['x-amz-date'],
+        'policy':data['fields']['policy'],
+        'x-amz-signature':data['fields']['x-amz-signature']
+    }
+    requests.post(url=submit_url, data=body, files={'file': open(file_path, 'rb')})
+
+
+
 if __name__ == '__main__':
     create_dir('./submission')
 
@@ -106,3 +137,7 @@ if __name__ == '__main__':
         args.update(json.load(f))
     
     inference(args)
+
+    print('\n* Start submission...')
+    submit(f'./submission/{args.save_file_name}.csv', f'{args.save_file_name} / {ipts.config_name}')
+    print('* End submission.')

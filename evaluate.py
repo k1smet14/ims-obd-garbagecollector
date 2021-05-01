@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from utils import *
-
+from torch.nn import functional as F
 
 def validation(model, data_loader, criterion, device):
     model.eval()
@@ -38,6 +38,7 @@ def validation_swin(model, data_loader, criterion, device,meta, n_class=12):
             images, masks = images.to(device), masks.long().to(device)            
             imgs = [images]
             outputs = model(imgs,meta,return_loss=False)
+            
             loss = criterion(outputs, masks)
             total_loss += loss
             cnt += 1
@@ -58,7 +59,7 @@ def validation_swin(model, data_loader, criterion, device,meta, n_class=12):
     model.train()
     return avrg_loss, np.mean(mIoU_list), miou2, miou3
 
-def validation3(model, data_loader, criterion, device, n_class=12):
+def validation3(model, data_loader, criterion, device, n_class=12,is_hrnet=False):
     model.eval()
     with torch.no_grad():
         total_loss = 0
@@ -70,13 +71,18 @@ def validation3(model, data_loader, criterion, device, n_class=12):
             images, masks = images.to(device), masks.long().to(device)            
 
             outputs = model(images)
+            if is_hrnet:
+                outputs = F.interpolate(
+                                outputs, (256,256),
+                                mode='bilinear', align_corners=True)
+            
             loss = criterion(outputs, masks)
             total_loss += loss
             cnt += 1
             
             outputs = torch.argmax(outputs, dim=1).detach().cpu().numpy()
             
-            hist = add_hist(hist, masks.detach().cpu().numpy(), outputs)
+            hist = add_hist(hist, masks.detach().cpu().numpy(), outputs,n_class)
 
             mIoU = label_accuracy_score(masks.detach().cpu().numpy(), outputs)
             mIoU_list.append(mIoU)

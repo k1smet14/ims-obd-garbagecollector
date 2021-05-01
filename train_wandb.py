@@ -13,7 +13,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 import segmentation_models_pytorch as smp
-
+from torch.nn import functional as F
 from pycocotools.coco import COCO
 import cv2
 import torchvision
@@ -112,7 +112,7 @@ def train(config=None):
 
     flag=True
     scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=EPOCHS, eta_max=Eta,  T_up=100, gamma=0.5)
-    scaler = GradScaler()
+    # scaler = GradScaler()
     img_metas =[[{
         'img_shape': (img_size, img_size, 3),
         'ori_shape': (img_size, img_size, 3),
@@ -123,6 +123,7 @@ def train(config=None):
                 'flip_direction': 'horizontal'
             }]]
     print("Start training..")
+    
     for epoch in range(EPOCHS):
         epoch+=1
         avg_loss = 0
@@ -136,38 +137,33 @@ def train(config=None):
             if args.network.startswith('swin'):
                 imgs = [images]
                 output = model(imgs,img_metas,return_loss=False)
-                loss = criterion(output, masks)
-                loss.backward()
-                if (step+1)%accumulation_step==0:
-                    optimizer.step()
-                    optimizer.zero_grad()
             else:
-                with autocast():
-                    output = model(images)
-                    loss = criterion(output, masks)
-                scaler.scale(loss).backward()
-                if (step+1)%accumulation_step==0:
-                    scaler.step(optimizer)
-                    scaler.update()
-                    optimizer.zero_grad()
-        
+                output = model(images)
+            if args.network=='hrnet':
+                output = F.interpolate(
+                            output, (img_size,img_size),
+                            mode='bilinear', align_corners=True)
+
+            loss = criterion(output, masks)
+            loss.backward()
+
+            if (step+1)%accumulation_step==0:
+                optimizer.step()
+                optimizer.zero_grad()
+    
             avg_loss += loss.item() / batch_count
             lr = scheduler.get_lr()[0]
             print(f"\rEpoch:{epoch:3d}  step:{step:3d}/{batch_count-1}  time:{time.time() - start:.3f}  LR:{lr:.6f}", end='')
             
         scheduler.step()
         if args.network.startswith('swin'):
-            val_loss, val_mIoU, val_mIoU2, val_mIoU3 = validation_swin(model, val_loader, criterion, device,img_metas)
-            wandb.log({"loss": avg_loss, "val_loss": val_loss, "val_mIoU": val_mIoU, "val_mIoU2": val_mIoU2, "val_mIoU3": val_mIoU3})
-            print(f"\n  loss: {avg_loss:.3f}  val_loss: {val_loss:.3f}  val_mIoU:{val_mIoU:.3f}  val_mIoU2:{val_mIoU2:.3f}  val_mIoU3:{val_mIoU3:.3f}")
-            file_name=save_model_name + f'_epoch{epoch}_score1{val_mIoU:.3f}_score2{val_mIoU2:.3f}_score3{val_mIoU3:.3f}.pt'
-            now_mIoU = (val_mIoU+val_mIoU2+val_mIoU3) /3            
+            val_loss, val_mIoU, val_mIoU2, val_mIoU3 = validation_swin(model, val_loader, criterion, device,img_metas)     
         else:
-            val_loss, val_mIoU = validation(model, val_loader, criterion, device)
-            wandb.log({"loss": avg_loss, "val_loss": val_loss, "val_mIoU": val_mIoU})                
-            print(f"\n  loss: {avg_loss:.3f}  val_loss: {val_loss:.3f}  val_mIoU:{val_mIoU:.3f}")
-            file_name=save_model_name + f'_epoch{epoch}_score{val_mIoU:.3f}.pt'
-            now_mIoU = val_mIoU
+            val_loss, val_mIoU, val_mIoU2, val_mIoU3  = validation3(model, val_loader, criterion, device,is_hrnet= args.network=='hrnet')
+        wandb.log({"loss": avg_loss, "val_loss": val_loss, "val_mIoU": val_mIoU, "val_mIoU2": val_mIoU2, "val_mIoU3": val_mIoU3})
+        print(f"\n  loss: {avg_loss:.3f}  val_loss: {val_loss:.3f}  val_mIoU:{val_mIoU:.3f}  val_mIoU2:{val_mIoU2:.3f}  val_mIoU3:{val_mIoU3:.3f}")
+        file_name=save_model_name + f'_epoch{epoch}_score1{val_mIoU:.3f}_score2{val_mIoU2:.3f}_score3{val_mIoU3:.3f}.pt'
+        now_mIoU = (val_mIoU+val_mIoU2+val_mIoU3) /3  
         
         if best_val_mIoU < now_mIoU:
             save_model(model, saved_dir="weight", file_name=file_name)
@@ -194,8 +190,8 @@ if __name__ == '__main__':
                         default='labv3p',
                         const='labv3p',
                         nargs='?',
-                        choices=['labv3p', 'swin_s','swin_b','swin_t'],
-                        help='labv3p, swin_s, swin_b (base), swin_t (tiny)')
+                        choices=['labv3p', 'swin_s','swin_b','swin_t','hrnet'],
+                        help='labv3p, swin_s, swin_b (base), swin_t (tiny), hrnet')
                         
     parser.add_argument('--model_name', type=str,default='None')
     parser.add_argument('--count',type=int,default=20)

@@ -10,6 +10,7 @@ import pandas as pd
 
 import torch
 import torch.nn as nn
+from torch.nn import functional as F
 from torch.utils.data import Dataset, DataLoader
 import segmentation_models_pytorch as smp
 import torch.distributed as dist
@@ -101,8 +102,9 @@ def train(config=None):
     elif OPTIMIZER == 'adamw':
         optimizer = torch.optim.AdamW(model.parameters(),lr=LR)
     
+    flag=True
     scheduler = CosineAnnealingWarmUpRestarts(optimizer, T_0=EPOCHS, eta_max=Eta,  T_up=100, gamma=0.5)
-    scaler = GradScaler()
+    # scaler = GradScaler()
     img_metas =[[{
         'img_shape': (img_size, img_size, 3),
         'ori_shape': (img_size, img_size, 3),
@@ -126,20 +128,19 @@ def train(config=None):
             if args.network.startswith('swin'):
                 imgs = [images]
                 output = model(imgs,img_metas,return_loss=False)
-                loss = criterion(output, masks)
-                loss.backward()
-                if (step+1)%accumulation_step==0:
-                    optimizer.step()
-                    optimizer.zero_grad()
             else:
-                with autocast():
-                    output = model(images)
-                    loss = criterion(output, masks)
-                scaler.scale(loss).backward()
-                if (step+1)%accumulation_step==0:
-                    scaler.step(optimizer)
-                    scaler.update()
-                    optimizer.zero_grad()
+                output = model(images)
+            if args.network=='hrnet':
+                output = F.interpolate(
+                                output, (img_size,img_size),
+                                mode='bilinear', align_corners=True)
+
+            loss = criterion(output, masks)
+            loss.backward()
+
+            if (step+1)%accumulation_step==0:
+                optimizer.step()
+                optimizer.zero_grad()
 
             avg_loss += loss.item() / batch_count
             lr = scheduler.get_lr()[0]
@@ -147,14 +148,19 @@ def train(config=None):
             
         scheduler.step()
         if args.network.startswith('swin'):
-            val_loss, val_mIoU = validation_swin(model, val_loader, criterion, device,img_metas)
+            val_loss, val_mIoU, val_mIoU2, val_mIoU3 = validation_swin(model, val_loader, criterion, device,img_metas)     
         else:
-            val_loss, val_mIoU = validation(model, val_loader, criterion, device)
-        print("val",avg_loss,val_loss,val_mIoU)
-        print(f"   loss: {avg_loss:.3f}  val_loss: {val_loss:.3f}  val_mIoU:{val_mIoU:.3f}")
-        if best_val_mIoU < val_mIoU:
-            save_model(model, saved_dir="./weight", file_name=save_model_name + f'_epoch{epoch}_score{val_mIoU:.3f}.pt')
-            best_val_mIoU = val_mIoU
+            val_loss, val_mIoU, val_mIoU2, val_mIoU3  = validation3(model, val_loader, criterion, device,is_hrnet= args.network=='hrnet')
+        print(f"\n  loss: {avg_loss:.3f}  val_loss: {val_loss:.3f}  val_mIoU:{val_mIoU:.3f}  val_mIoU2:{val_mIoU2:.3f}  val_mIoU3:{val_mIoU3:.3f}")
+        file_name=save_model_name + f'_epoch{epoch}_score1{val_mIoU:.3f}_score2{val_mIoU2:.3f}_score3{val_mIoU3:.3f}.pt'
+        now_mIoU = (val_mIoU+val_mIoU2+val_mIoU3) /3  
+
+        if best_val_mIoU < now_mIoU:
+            save_model(model, saved_dir="weight", file_name=file_name)
+            best_val_mIoU = now_mIoU
+            flag=False
+        elif epoch >= EPOCHS//3 and flag and now_mIoU < break_mIoU:
+            break
     print("Finish training")
 
 
@@ -181,11 +187,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     config = {
-        'SEED': 9,
-        'BATCH_SIZE' : 8,
-        'LR' : 1e-5,
-        'Eta_Max':1e-6,
-        'EPOCHS' : 20,
+        'SEED': 2536,
+        'BATCH_SIZE' : 64,
+        'LR' : 5e-5,
+        'Eta_Max':1e-7,
+        'EPOCHS' : 40,
         'Optimizer': 'adamw'
     }
     train(config)

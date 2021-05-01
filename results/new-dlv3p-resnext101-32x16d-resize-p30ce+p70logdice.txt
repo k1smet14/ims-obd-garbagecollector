@@ -1,0 +1,97 @@
+Any Comment : mixed loss function .30 ce + .70 logdice applied Code of dlv3p resnext101 32x16d 256 resized
+
+model_name                                                             | batch_size | max_epochs | learning_rate | num_workers 
+new-dlv3p-resnext101-32x16d-resize-p30ce+p70logdice                    | 8         | 20          | 1e-05        | 16 
+Resize(256,256) | colorjitter-brightness(0.4) 
+loss_function      | optimizer | scheduler
+0.3ce+0.7logdice | adam      | N/A 
+
+208 seconds per epoch
+saved model at epoch 13
+
+Epoch [1/20], Step [100/327], Loss: 2.9042
+Epoch [1/20], Step [200/327], Loss: 1.6292
+Epoch [1/20], Step [300/327], Loss: 1.3607
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+1    | 1.4900   | 0.2411 | 0.3479 | 0.3324
+Best performance at epoch: 1
+Epoch [2/20], Step [100/327], Loss: 1.7430
+Epoch [2/20], Step [200/327], Loss: 1.5494
+Epoch [2/20], Step [300/327], Loss: 1.3474
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+2    | 1.2569   | 0.2965 | 0.4034 | 0.4310
+Best performance at epoch: 2
+Epoch [3/20], Step [100/327], Loss: 0.7787
+Epoch [3/20], Step [200/327], Loss: 1.0768
+Epoch [3/20], Step [300/327], Loss: 0.4844
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+3    | 1.1271   | 0.3353 | 0.4104 | 0.4589
+Best performance at epoch: 3
+Epoch [4/20], Step [100/327], Loss: 0.9538
+Epoch [4/20], Step [200/327], Loss: 0.7918
+Epoch [4/20], Step [300/327], Loss: 0.3922
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+4    | 1.0611   | 0.3558 | 0.4205 | 0.4738
+Best performance at epoch: 4
+Epoch [5/20], Step [100/327], Loss: 1.2697
+Epoch [5/20], Step [200/327], Loss: 1.1062
+Epoch [5/20], Step [300/327], Loss: 0.8213
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+5    | 0.9986   | 0.3783 | 0.4526 | 0.5198
+Best performance at epoch: 5
+Epoch [6/20], Step [100/327], Loss: 1.2432
+Epoch [6/20], Step [200/327], Loss: 0.3204
+Epoch [6/20], Step [300/327], Loss: 1.2619
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+6    | 0.9549   | 0.3754 | 0.4511 | 0.5083
+Epoch [7/20], Step [100/327], Loss: 0.2993
+Epoch [7/20], Step [200/327], Loss: 0.9599
+Epoch [7/20], Step [300/327], Loss: 1.1236
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+7    | 0.9155   | 0.4027 | 0.4864 | 0.5276
+Best performance at epoch: 7
+Epoch [8/20], Step [100/327], Loss: 0.3094
+Epoch [8/20], Step [200/327], Loss: 1.2068
+Epoch [8/20], Step [300/327], Loss: 0.7194
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+8    | 0.9026   | 0.4020 | 0.4812 | 0.5346
+Best performance at epoch: 8
+Epoch [9/20], Step [100/327], Loss: 0.3889
+Epoch [9/20], Step [200/327], Loss: 0.8902
+Epoch [9/20], Step [300/327], Loss: 0.3780
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+9    | 0.8546   | 0.4163 | 0.5314 | 0.5566
+Best performance at epoch: 9
+Epoch [10/20], Step [100/327], Loss: 0.8003
+Epoch [10/20], Step [200/327], Loss: 0.7201
+Epoch [10/20], Step [300/327], Loss: 0.3436
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+10    | 0.8700   | 0.4070 | 0.4983 | 0.5476
+Epoch [11/20], Step [100/327], Loss: 0.8489
+Epoch [11/20], Step [200/327], Loss: 0.3071
+Epoch [11/20], Step [300/327], Loss: 0.2150
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+11    | 0.8603   | 0.4209 | 0.5194 | 0.5717
+Best performance at epoch: 11
+Epoch [12/20], Step [100/327], Loss: 0.2581
+Epoch [12/20], Step [200/327], Loss: 1.0369
+Epoch [12/20], Step [300/327], Loss: 0.3635
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+12    | 0.8788   | 0.4344 | 0.5179 | 0.5774
+Best performance at epoch: 12
+Epoch [13/20], Step [100/327], Loss: 0.5263
+Epoch [13/20], Step [200/327], Loss: 0.5528
+Epoch [13/20], Step [300/327], Loss: 0.5848
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+13    | 0.8558   | 0.4446 | 0.5316 | 0.5855
+Best performance at epoch: 13
+Epoch [14/20], Step [100/327], Loss: 0.3132
+Epoch [14/20], Step [200/327], Loss: 0.8997
+Epoch [14/20], Step [300/327], Loss: 0.5297
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+14    | 0.8448   | 0.4457 | 0.5362 | 0.5831
+Epoch [15/20], Step [100/327], Loss: 0.1659
+Epoch [15/20], Step [200/327], Loss: 0.3628
+Epoch [15/20], Step [300/327], Loss: 0.4250
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+15    | 0.8645   | 0.4367 | 0.5244 | 0.5777

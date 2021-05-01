@@ -16,7 +16,8 @@ wandb autoML 실행 코드 (1차 수정)
 ### dataloader.py
 CustomDataset <br>
 (4.29) MixDataset 추가
-(5.02) 앙상블을 위한 EnsembleDataset 추가, weighted classMix를 위해 변수 및 함수 하나씩 
+(5.02) 앙상블을 위한 EnsembleDataset 추가
+       weighted classMix를 위해 변수 및 함수 하나씩 추가
 
 ### scheduler.py
 custom scheduler : CosineAnnealingWarmUpRestarts() <br>

@@ -75,6 +75,68 @@ class CustomDataLoader(Dataset):
         return len(self.coco.getImgIds())
     
     
+def get_transform(config):
+    transform_list = []
+    if(config['size']==256):
+        transform_list.append(A.Resize(256, 256))
+    if(config['tta']==True):
+        transform_list.append(A.HorizontalFlip(p=1.0))
+    transform_list.append(ToTensorV2())
+    
+    return A.Compose(transform_list)
+
+class EnsembleDataset(Dataset):
+    """COCO format"""
+    def __init__(self, data_dir, transform_config = None):
+        super().__init__()
+        self.coco = COCO(data_dir)
+        self.dataset_path = 'input/data/'
+        if transform_config is not None:
+            self.transform = get_transform(transform_config)
+        
+    def __getitem__(self, index: int):
+        
+        ### Load Imgs ###
+        image_id = self.coco.getImgIds(imgIds=index)
+        image_infos = self.coco.loadImgs(image_id)[0]
+        
+        images = cv2.imread(self.dataset_path+image_infos['file_name'])
+        images = cv2.cvtColor(images, cv2.COLOR_BGR2RGB).astype(np.float32)
+        images /= 255.0
+        
+        if self.transform is not None:
+            transformed = self.transform(image=images)
+            images = transformed["image"]
+        return images
+    
+    def __len__(self):
+        return len(self.coco.getImgIds())
+
+
+    
+
+    
+    
+    
+labels_W = [0.0,
+            0.00781,
+            0.0,
+            0.0,
+            0.00190,
+            0.00223,
+            0.00205,
+            0.0,
+            0.0,
+            0.0,
+            0.02,
+            0.00710]
+
+def labelRandomChoice(labels):
+    labels = np.unique(labels)
+    choice = np.zeros(12).astype(int)
+    choice[labels]=[labels]
+    choiced_label = random.choices(choice, weights=labels_W, k=1)
+    return torch.LongTensor(choiced_label)
     
     
 class MixDataLoader(Dataset):
@@ -120,7 +182,7 @@ class MixDataLoader(Dataset):
                 images = transformed["image"]
                 masks = transformed["mask"]
                 
-            return images, masks, random.choice(labels)
+            return images, masks, labelRandomChoice(labels)
         
         ### Test Time ###
         if self.mode == 'test':

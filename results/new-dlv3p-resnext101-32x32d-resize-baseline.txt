@@ -6,8 +6,9 @@ Resize(256,256) | colorjitter-brightness(0.4)
 loss_function | optimizer | scheduler
 crossentropy  | adam      | N/A 
 
-x seconds per epoch
-saved model at epoch y
+293 seconds per epoch
+saved model at epoch 6
+
 Epoch [1/20], Step [100/327], Loss: 1.9461
 Epoch [1/20], Step [200/327], Loss: 1.3640
 Epoch [1/20], Step [300/327], Loss: 1.2067

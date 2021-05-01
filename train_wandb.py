@@ -47,8 +47,10 @@ def train(config=None):
     OPTIMIZER = config.Optimizer
     img_size = config.IMG_SIZE
     save_model_name = f'{args.project_name}_{img_size}_seed{SEED}_batch{BATCH_SIZE}_LR{LR}_Eta{Eta}'
-    accumulation_step = 1
-    best_val_mIoU = 0.3
+    accumulation_step = config.ACCUM
+
+    break_mIoU = 0.3
+    best_val_mIoU = 0.35
     
     
         ### SEED setting ###
@@ -66,26 +68,22 @@ def train(config=None):
     test_path = dataset_path + '/test.json'
 
     train_transform = A.Compose([
+            A.Resize(img_size, img_size),
             A.RandomScale ((0.5, 2.0)),
             A.RandomCrop(img_size,img_size),
             A.HorizontalFlip (0.5),
             A.Normalize (mean=[0.485, 0.456, 0.406],
-                            std=[0.229, 0.224, 0.225]),
+                            std=[0.229, 0.224, 0.225],max_pixel_value=1.0),
     ToTensorV2(),
         ])
 
     val_transform = A.Compose([
-                          
+                          A.Resize(img_size, img_size),
     A.Normalize (mean=[0.485, 0.456, 0.406],
-                            std=[0.229, 0.224, 0.225]),
+                            std=[0.229, 0.224, 0.225],max_pixel_value=1.0),
     ToTensorV2(),
                           ])
 
-    test_transform = A.Compose([
-    A.Normalize (mean=[0.485, 0.456, 0.406],
-                            std=[0.229, 0.224, 0.225]),
-    ToTensorV2(),
-                           ])
     train_dataset = CustomDataLoader(data_dir=train_path, mode='train', transform=train_transform)
     val_dataset = CustomDataLoader(data_dir=val_path, mode='val', transform=val_transform)
     
@@ -129,8 +127,9 @@ def train(config=None):
         epoch+=1
         avg_loss = 0
         batch_count = len(train_loader)
-
+        model.train()
         for step, (images, masks) in enumerate(train_loader):
+            
             start = time.time()
             images, masks = images.to(device), masks.long().to(device)
 
@@ -158,17 +157,23 @@ def train(config=None):
             
         scheduler.step()
         if args.network.startswith('swin'):
-            val_loss, val_mIoU = validation_swin(model, val_loader, criterion, device,img_metas)
+            val_loss, val_mIoU, val_mIoU2, val_mIoU3 = validation_swin(model, val_loader, criterion, device,img_metas)
+            wandb.log({"loss": avg_loss, "val_loss": val_loss, "val_mIoU": val_mIoU, "val_mIoU2": val_mIoU2, "val_mIoU3": val_mIoU3})
+            print(f"\n  loss: {avg_loss:.3f}  val_loss: {val_loss:.3f}  val_mIoU:{val_mIoU:.3f}  val_mIoU2:{val_mIoU2:.3f}  val_mIoU3:{val_mIoU3:.3f}")
+            file_name=save_model_name + f'_epoch{epoch}_score1{val_mIoU:.3f}_score2{val_mIoU2:.3f}_score3{val_mIoU3:.3f}.pt'
+            now_mIoU = (val_mIoU+val_mIoU2+val_mIoU3) /3            
         else:
             val_loss, val_mIoU = validation(model, val_loader, criterion, device)
-        print("val",avg_loss,val_loss,val_mIoU)
-        print(f"   loss: {avg_loss:.3f}  val_loss: {val_loss:.3f}  val_mIoU:{val_mIoU:.3f}")
-        wandb.log({"loss": avg_loss, "val_loss": val_loss, "val_mIoU": val_mIoU})
-        if best_val_mIoU < val_mIoU:
-            save_model(model, saved_dir="weight", file_name=save_model_name + f'_epoch{epoch}_score{val_mIoU:.3f}.pt')
-            best_val_mIoU = val_mIoU
+            wandb.log({"loss": avg_loss, "val_loss": val_loss, "val_mIoU": val_mIoU})                
+            print(f"\n  loss: {avg_loss:.3f}  val_loss: {val_loss:.3f}  val_mIoU:{val_mIoU:.3f}")
+            file_name=save_model_name + f'_epoch{epoch}_score{val_mIoU:.3f}.pt'
+            now_mIoU = val_mIoU
+        
+        if best_val_mIoU < now_mIoU:
+            save_model(model, saved_dir="weight", file_name=file_name)
+            best_val_mIoU = now_mIoU
             flag=False
-        elif epoch >= EPOCHS//2 and flag:
+        elif epoch >= EPOCHS//3 and flag and now_mIoU < break_mIoU:
             break
     print("Finish training")
 
@@ -206,19 +211,25 @@ if __name__ == '__main__':
 
     
     parameters_dict = {
-        'SEED': {
-            'distribution': 'int_uniform',
-            'max': 9999,
-            'min': 1
+        # 'SEED': {
+        #     'distribution': 'int_uniform',
+        #     'max': 9999,
+        #     'min': 1
+        # },
+        'SEED':{
+            'values' : [2536]
         },
         'BATCH_SIZE': {
-            'values': [8,16]
+            'values': [32]
+        },
+        'ACCUM':{
+            'values': [1,2]
         },
         'LR': {
-            'values': [1e-5,1e-6]
+            'values': [1e-4,1e-3,1e-5,5e-5,5e-4]
         },
         'Eta_Max':{
-            'values': [1e-7,1e-8]
+            'values': [1e-8,1e-7]
         },
         'EPOCHS':{
             'values': [20,40]
@@ -227,7 +238,7 @@ if __name__ == '__main__':
             'value': 'adamw'
         },
         'IMG_SIZE':{
-            'values' : [512]
+            'values' : [256]
         },
          'project_name':{
             'value': args.project_name

@@ -63,7 +63,7 @@ class CustomDataLoader(Dataset):
                 transformed = self.transform(image=images)
                 images = transformed["image"]
                 
-            return images #, image_infos
+            return images, image_infos
     
     
     def __len__(self):

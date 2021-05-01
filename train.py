@@ -62,6 +62,7 @@ def train(config=None):
     test_path = dataset_path + '/test.json'
 
     train_transform = A.Compose([
+            A.Resize(img_size, img_size),
             A.RandomScale ((0.5, 2.0)),
             A.RandomCrop(img_size,img_size),
             A.HorizontalFlip (0.5),
@@ -77,11 +78,7 @@ def train(config=None):
     ToTensorV2(),
                           ])
 
-    test_transform = A.Compose([
-    A.Normalize (mean=[0.485, 0.456, 0.406],
-                            std=[0.229, 0.224, 0.225]),
-    ToTensorV2(),
-                           ])
+    
     train_dataset = CustomDataLoader(data_dir=train_path, mode='train', transform=train_transform)
     val_dataset = CustomDataLoader(data_dir=val_path, mode='val', transform=val_transform)
     
@@ -164,7 +161,7 @@ def train(config=None):
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description='Segmentation data viewer')    
+    parser = argparse.ArgumentParser(description='Train')    
     parser.add_argument('--project_name', type=str,default='labv3-resnet101')
     # optimizer
     parser.add_argument('--backbone_name',
@@ -185,7 +182,7 @@ if __name__ == '__main__':
 
     config = {
         'SEED': 9,
-        'BATCH_SIZE' : 16,
+        'BATCH_SIZE' : 8,
         'LR' : 1e-5,
         'Eta_Max':1e-6,
         'EPOCHS' : 20,

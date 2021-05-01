@@ -47,12 +47,16 @@ def load_swin(cfg,ck_path):
     model_dict = model.backbone.state_dict()
     pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}
     model_dict.update(pretrained_dict) 
-
+    del pre_trained
+    torch.cuda.empty_cache()
     model.backbone.load_state_dict(model_dict)
     return model
 
+def make_swin_model(cfg):
+    return build_segmentor(cfg.model,train_cfg=None,test_cfg=None)
 
-def get_model(args,classes=12):
+
+def get_model(args,classes=12,train=True):
     if args.network.startswith('swin'):
         repo_root='/opt/ml/p3-ims-obd-garbagecollector'
         if args.network[-1] == 's':
@@ -64,7 +68,10 @@ def get_model(args,classes=12):
         else:
             cfg = Config.fromfile(os.path.join(repo_root,'swin/configs/swin/upernet_swin_tiny_patch4_window7_512x512_160k_ade20k.py'))
             ck_path = os.path.join(repo_root,'swin_weight/upernet_swin_tiny_patch4_window7_512x512.pth')        
-        return load_swin(cfg,ck_path)
+        if train:
+            return load_swin(cfg,ck_path)
+        else:
+            return make_swin_model(cfg)
     elif args.network == 'labv3p':
         return smp.DeepLabV3Plus(
         encoder_name=args.backbone_name,

@@ -174,8 +174,8 @@ if __name__ == '__main__':
                         default='labv3p',
                         const='labv3p',
                         nargs='?',
-                        choices=['labv3p', 'swin_s','swin_b','swin_t'],
-                        help='labv3p, swin_s, swin_b (base), swin_t (tiny)')
+                        choices=['labv3p', 'swin_s','swin_b','swin_t','hrnet'],
+                        help='labv3p, swin_s, swin_b (base), swin_t (tiny), hrnet')
                         
     parser.add_argument('--count',type=int,default=20)
     args = parser.parse_args()

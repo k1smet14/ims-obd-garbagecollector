@@ -13,7 +13,7 @@ from mmseg.models import build_segmentor
 from mmseg.utils import collect_env, get_root_logger
 
 import segmentation_models_pytorch as smp
-
+from hrnet import HrNet
 
 def save_model(model, saved_dir="model", file_name="default.pt"):
     if not os.path.exists(saved_dir):
@@ -61,13 +61,13 @@ def get_model(args,classes=12,train=True):
         repo_root='/opt/ml/p3-ims-obd-garbagecollector'
         if args.network[-1] == 's':
             cfg = Config.fromfile(os.path.join(repo_root,'swin/configs/swin/upernet_swin_small_patch4_window7_512x512_160k_ade20k.py'))
-            ck_path = os.path.join(repo_root,'swin_weight/upernet_swin_small_patch4_window7_512x512.pth')
+            ck_path = os.path.join(repo_root,'pretrained/upernet_swin_small_patch4_window7_512x512.pth')
         elif args.network[-1] == 'b':
             cfg = Config.fromfile(os.path.join(repo_root,'swin/configs/swin/upernet_swin_base_patch4_window7_512x512_160k_ade20k.py'))
-            ck_path = os.path.join(repo_root,'swin_weight/upernet_swin_base_patch4_window7_512x512.pth')
+            ck_path = os.path.join(repo_root,'pretrained/upernet_swin_base_patch4_window7_512x512.pth')
         else:
             cfg = Config.fromfile(os.path.join(repo_root,'swin/configs/swin/upernet_swin_tiny_patch4_window7_512x512_160k_ade20k.py'))
-            ck_path = os.path.join(repo_root,'swin_weight/upernet_swin_tiny_patch4_window7_512x512.pth')        
+            ck_path = os.path.join(repo_root,'pretrained/upernet_swin_tiny_patch4_window7_512x512.pth')        
         if train:
             return load_swin(cfg,ck_path)
         else:
@@ -78,4 +78,6 @@ def get_model(args,classes=12,train=True):
         encoder_weights='imagenet', 
         classes=12
         )
+    elif args.network == 'hrnet':
+        return HrNet(classes,train)
     

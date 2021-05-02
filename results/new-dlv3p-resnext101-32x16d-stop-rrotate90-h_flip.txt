@@ -1,0 +1,89 @@
+Any Comment : randomrotate90, h_flip Code of dlv3p resnext101 32x16d
+
+model_name                                                             | batch_size | max_epochs | learning_rate | num_workers 
+new-dlv3p-resnext101-32x16d-stop-rrotate90-h_flip                      | 8         | 50          | 1e-05        | 8 
+colorjitter-brightness(0.4) | randorotate90 | h_flip
+loss_function | optimizer | scheduler
+cross entropy | adam      | N/A 
+
+x seconds per epoch
+saved model at epoch y
+Epoch [1/50], Step [100/327], Loss: 1.3755
+Epoch [1/50], Step [200/327], Loss: 1.2179
+Epoch [1/50], Step [300/327], Loss: 0.9555
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+1    | 0.7786   | 0.3241 | 0.3680 | 0.4430
+Best performance at epoch: 1
+Epoch [2/50], Step [100/327], Loss: 0.6536
+Epoch [2/50], Step [200/327], Loss: 0.9602
+Epoch [2/50], Step [300/327], Loss: 0.5783
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+2    | 0.5671   | 0.4252 | 0.4539 | 0.5428
+Best performance at epoch: 2
+Epoch [3/50], Step [100/327], Loss: 0.5189
+Epoch [3/50], Step [200/327], Loss: 0.4766
+Epoch [3/50], Step [300/327], Loss: 0.5756
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+3    | 0.4462   | 0.4689 | 0.4990 | 0.5702
+Best performance at epoch: 3
+Epoch [4/50], Step [100/327], Loss: 0.3430
+Epoch [4/50], Step [200/327], Loss: 0.3516
+Epoch [4/50], Step [300/327], Loss: 0.3126
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+4    | 0.3778   | 0.4865 | 0.5093 | 0.6011
+Best performance at epoch: 4
+Epoch [5/50], Step [100/327], Loss: 0.4267
+Epoch [5/50], Step [200/327], Loss: 0.3733
+Epoch [5/50], Step [300/327], Loss: 0.3185
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+5    | 0.3277   | 0.4989 | 0.5267 | 0.6204
+Best performance at epoch: 5
+Epoch [6/50], Step [100/327], Loss: 0.3255
+Epoch [6/50], Step [200/327], Loss: 0.2358
+Epoch [6/50], Step [300/327], Loss: 0.2370
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+6    | 0.3032   | 0.5131 | 0.5307 | 0.6264
+Best performance at epoch: 6
+Epoch [7/50], Step [100/327], Loss: 0.4318
+Epoch [7/50], Step [200/327], Loss: 0.2021
+Epoch [7/50], Step [300/327], Loss: 0.2457
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+7    | 0.2940   | 0.5061 | 0.5275 | 0.6328
+Best performance at epoch: 7
+Epoch [8/50], Step [100/327], Loss: 0.2465
+Epoch [8/50], Step [200/327], Loss: 0.2588
+Epoch [8/50], Step [300/327], Loss: 0.2641
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+8    | 0.2633   | 0.5053 | 0.5422 | 0.6312
+Epoch [9/50], Step [100/327], Loss: 0.1848
+Epoch [9/50], Step [200/327], Loss: 0.1437
+Epoch [9/50], Step [300/327], Loss: 0.1389
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+9    | 0.2705   | 0.5121 | 0.5368 | 0.6288
+Epoch [10/50], Step [100/327], Loss: 0.2080
+Epoch [10/50], Step [200/327], Loss: 0.1302
+Epoch [10/50], Step [300/327], Loss: 0.2235
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+10    | 0.2511   | 0.5222 | 0.5843 | 0.6400
+Best performance at epoch: 10
+Epoch [11/50], Step [100/327], Loss: 0.1619
+Epoch [11/50], Step [200/327], Loss: 0.1987
+Epoch [11/50], Step [300/327], Loss: 0.0913
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+11    | 0.2275   | 0.5358 | 0.6246 | 0.6570
+Best performance at epoch: 11
+Epoch [12/50], Step [100/327], Loss: 0.1372
+Epoch [12/50], Step [200/327], Loss: 0.1443
+Epoch [12/50], Step [300/327], Loss: 0.1809
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+12    | 0.2369   | 0.5264 | 0.6046 | 0.6376
+Epoch [13/50], Step [100/327], Loss: 0.1172
+Epoch [13/50], Step [200/327], Loss: 0.1629
+Epoch [13/50], Step [300/327], Loss: 0.1633
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+13    | 0.2347   | 0.5416 | 0.6089 | 0.6453
+Epoch [14/50], Step [100/327], Loss: 0.1376
+Epoch [14/50], Step [200/327], Loss: 0.0972
+Epoch [14/50], Step [300/327], Loss: 0.0955
+epoch | avg_loss | mIoU1  | mIoU2  | mIoU3
+14    | 0.2409   | 0.5231 | 0.6006 | 0.6367

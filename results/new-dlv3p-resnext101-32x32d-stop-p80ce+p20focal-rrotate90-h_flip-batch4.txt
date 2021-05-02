@@ -1,0 +1,5 @@
+Any Comment : randomrotate90, h_flip, p80ce + p20focal loss Code of dlv3p resnext101 32x32d
+
+model_name                                                             | batch_size | max_epochs | learning_rate | num_workers 
+new-dlv3p-resnext101-32x32d-stop-p80ce+p20focal-rrotate90-h_flip-batch4 | 4         | 50          | 1e-05        | 1 
+colorjitter-brightness(0.4) | randorotate90 | h_flip

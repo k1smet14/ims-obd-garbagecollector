@@ -5,11 +5,15 @@ test데이터를 segmentation하여 만든 mask파일 760장이 들어있습니�
 1. pseudo_masks.zip 파일을 다운받은 후 압축을 푸셔서, input/data/pseudo_masks 경로로 만들어주세요.<br>
 2. pseudo_mask 사용 예제.ipynb 코드를 보시면 PseudoTrainset 클래스가 있습니다. 복사해서 기존의 CustomDataset처럼 사용하시면 됩니다.
 
+### (05.03) KFold.ipynb
+이미지당 개체수를 기준으로 5Fold split<br>
+이미지가 5장 미만인 개체 수는 100으로 통합<br>
 
 
 ### [code]SoftEnsemble.ipynb
 (4.30) 앙상블용 코드 사용하기 쉽게 작성<br>
-(5.01) scaling, TTA 앙상블 추가 (dataloader.py 업데이트 필요)
+(5.01) scaling, TTA 앙상블 추가 (dataloader.py 업데이트 필요)<br>
+(5.04) SoftEnsemble_4TTA.ipynb 추가. (normal, flip, clockRotate, counterClockRotate)
 
 ### [code]DL3P+resnext50_resize_iouCE.ipynb
 baseline. 실험용 코드

@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torch.nn import functional as F
 from pycocotools.coco import COCO
 
 
@@ -60,10 +61,15 @@ def infer(args):
                 outs = model([in_imgs],img_metas,return_loss=False)
             else:
                 outs = model(in_imgs)
+
+            if args.network=='hrnet':
+                outs = F.interpolate(
+                                outs, (args.infer_size,args.infer_size),
+                                mode='bilinear', align_corners=True)
             oms = torch.argmax(outs.squeeze(), dim=1).detach().cpu().numpy()
             
             # resize (256 x 256)
-            if args.infer_size != 256:
+            if args.infer_size != 256 and args.network != 'hrnet':
                 temp_mask = []
                 for img, mask in zip(np.stack(imgs), oms):
                     transformed = transform(image=img, mask=mask)
@@ -101,8 +107,8 @@ if __name__=='__main__':
                         default='labv3p',
                         const='labv3p',
                         nargs='?',
-                        choices=['labv3p', 'swin_s','swin_b','swin_t'],
-                        help='labv3p, swin_s, swin_b (base), swin_t (tiny)')
+                        choices=['labv3p', 'swin_s','swin_b','swin_t','hrnet'],
+                        help='labv3p, swin_s, swin_b (base), swin_t (tiny), hrnet')
     
     args = parser.parse_args()
     

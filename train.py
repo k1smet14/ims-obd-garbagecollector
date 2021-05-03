@@ -41,7 +41,7 @@ def train(config=None):
     EPOCHS = config['EPOCHS']
     LR = config['LR']
     Eta = config['Eta_Max']
-    img_size = 256
+    img_size = 1024
     OPTIMIZER = config['Optimizer']
     save_model_name = f'{args.project_name}_{img_size}_seed{SEED}_batch{BATCH_SIZE}_LR{LR}_Eta{Eta}'
     accumulation_step = 1
@@ -62,26 +62,44 @@ def train(config=None):
     val_path = dataset_path + '/val.json'
     test_path = dataset_path + '/test.json'
 
-    train_transform = A.Compose([
-            A.Resize(img_size, img_size),
-            A.RandomScale ((0.5, 2.0)),
-            A.RandomCrop(img_size,img_size),
-            A.HorizontalFlip (0.5),
-            A.Normalize (mean=[0.485, 0.456, 0.406],
-                            std=[0.229, 0.224, 0.225]),
-    ToTensorV2(),
+    if args.network=='hrnet' and not args.is_upsample:
+        train_transform = A.Compose([
+                A.Resize(img_size, img_size),
+                A.RandomScale ((0.5, 2.0)),
+                A.RandomCrop(img_size,img_size),
+                A.HorizontalFlip (0.5),
+                A.Normalize (mean=[0.485, 0.456, 0.406],
+                                std=[0.229, 0.224, 0.225]),
+            ])
+        mask_transform = A.Compose([
+            A.Resize(img_size//4, img_size//4),
         ])
-
-    val_transform = A.Compose([
-                          A.Resize(256, 256),
-    A.Normalize (mean=[0.485, 0.456, 0.406],
+        val_transform = A.Compose([
+                          A.Resize(img_size,img_size),
+                            A.Normalize (mean=[0.485, 0.456, 0.406],
                             std=[0.229, 0.224, 0.225]),
-    ToTensorV2(),
                           ])
-
+    else:    
+        train_transform = A.Compose([
+                A.Resize(img_size, img_size),
+                A.RandomScale ((0.5, 2.0)),
+                A.RandomCrop(img_size,img_size),
+                A.HorizontalFlip (0.5),
+                A.Normalize (mean=[0.485, 0.456, 0.406],
+                                std=[0.229, 0.224, 0.225]),
+            ToTensorV2(),
+            ])
+        mask_transform = None
+        val_transform = A.Compose([
+                            A.Resize(256, 256) ,
+                            A.Normalize (mean=[0.485, 0.456, 0.406],
+                            std=[0.229, 0.224, 0.225]),
+                            ToTensorV2(),
+                          ])
     
-    train_dataset = CustomDataLoader(data_dir=train_path, mode='train', transform=train_transform)
-    val_dataset = CustomDataLoader(data_dir=val_path, mode='val', transform=val_transform)
+    
+    train_dataset = CustomDataLoader(data_dir=train_path, mode='train', transform=train_transform,mask_transform=mask_transform)
+    val_dataset = CustomDataLoader(data_dir=val_path, mode='val', transform=val_transform,mask_transform=mask_transform)
     
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=2, drop_last=True)
     val_loader = torch.utils.data.DataLoader(dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
@@ -130,11 +148,11 @@ def train(config=None):
                 output = model(imgs,img_metas,return_loss=False)
             else:
                 output = model(images)
-            if args.network=='hrnet':
+            if args.network=='hrnet' and args.is_upsample :
                 output = F.interpolate(
                                 output, (img_size,img_size),
                                 mode='bilinear', align_corners=True)
-
+            
             loss = criterion(output, masks)
             loss.backward()
 
@@ -150,7 +168,7 @@ def train(config=None):
         if args.network.startswith('swin'):
             val_loss, val_mIoU, val_mIoU2, val_mIoU3 = validation_swin(model, val_loader, criterion, device,img_metas)     
         else:
-            val_loss, val_mIoU, val_mIoU2, val_mIoU3  = validation3(model, val_loader, criterion, device,is_hrnet= args.network=='hrnet')
+            val_loss, val_mIoU, val_mIoU2, val_mIoU3  = validation3(model, val_loader, criterion, device,is_hrnet= args.network=='hrnet' and args.is_upsample )
         print(f"\n  loss: {avg_loss:.3f}  val_loss: {val_loss:.3f}  val_mIoU:{val_mIoU:.3f}  val_mIoU2:{val_mIoU2:.3f}  val_mIoU3:{val_mIoU3:.3f}")
         file_name=save_model_name + f'_epoch{epoch}_score1{val_mIoU:.3f}_score2{val_mIoU2:.3f}_score3{val_mIoU3:.3f}.pt'
         now_mIoU = (val_mIoU+val_mIoU2+val_mIoU3) /3  
@@ -182,13 +200,12 @@ if __name__ == '__main__':
                         nargs='?',
                         choices=['labv3p', 'swin_s','swin_b','swin_t','hrnet'],
                         help='labv3p, swin_s, swin_b (base), swin_t (tiny), hrnet')
-                        
-    parser.add_argument('--count',type=int,default=20)
+    parser.add_argument('--is_upsample',action='store_true')
     args = parser.parse_args()
 
     config = {
         'SEED': 2536,
-        'BATCH_SIZE' : 64,
+        'BATCH_SIZE' : 2,
         'LR' : 5e-5,
         'Eta_Max':1e-7,
         'EPOCHS' : 40,

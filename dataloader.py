@@ -22,10 +22,12 @@ def get_classname(classID, cats):
 
 class CustomDataLoader(Dataset):
     """COCO format"""
-    def __init__(self, data_dir, mode = 'train', transform = None):
+    def __init__(self, data_dir, mode = 'train', transform = None,mask_transform = None):
         super().__init__()
         self.mode = mode
         self.transform = transform
+        self.mask_transform = mask_transform
+        self.to_tensor = ToTensorV2()
         self.coco = COCO(data_dir)
         self.dataset_path = 'input/data/'
         self.category_names = ['Backgroud', 'UNKNOWN', 'General trash', 'Paper', 'Paper pack', 'Metal', 'Glass', 'Plastic', 'Styrofoam', 'Plastic bag', 'Battery', 'Clothing']
@@ -55,7 +57,11 @@ class CustomDataLoader(Dataset):
                 transformed = self.transform(image=images, mask=masks)
                 images = transformed["image"]
                 masks = transformed["mask"]
-                
+                if self.mask_transform is not None:
+                    transformed = self.mask_transform(image=images,mask =masks)
+                    masks = transformed["mask"]
+                    transformed = self.to_tensor(image=images,mask=masks)
+                    images, masks =  transformed["image"],transformed["mask"]
             return images, masks #, image_infos
         
         if self.mode == 'test':

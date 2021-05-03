@@ -65,30 +65,46 @@ def train(config=None):
     dataset_path = 'input/data'
     train_path = dataset_path + '/train.json'
     val_path = dataset_path + '/val.json'
-    test_path = dataset_path + '/test.json'
 
-    train_transform = A.Compose([
-            A.Resize(img_size, img_size),
-            A.RandomScale ((0.5, 2.0)),
-            A.RandomCrop(img_size,img_size),
-            A.HorizontalFlip (0.5),
-            A.Normalize (mean=[0.485, 0.456, 0.406],
-                            std=[0.229, 0.224, 0.225],max_pixel_value=1.0),
-    ToTensorV2(),
+    if args.network=='hrnet' and not args.is_upsample:
+        train_transform = A.Compose([
+                A.Resize(img_size, img_size),
+                A.RandomScale ((0.5, 2.0)),
+                A.RandomCrop(img_size,img_size),
+                A.HorizontalFlip (0.5),
+                A.Normalize (mean=[0.485, 0.456, 0.406],
+                                std=[0.229, 0.224, 0.225]),
+            ])
+        mask_transform = A.Compose([
+            A.Resize(img_size//4, img_size//4),
         ])
-
-    val_transform = A.Compose([
-                          A.Resize(img_size, img_size),
-    A.Normalize (mean=[0.485, 0.456, 0.406],
-                            std=[0.229, 0.224, 0.225],max_pixel_value=1.0),
-    ToTensorV2(),
+        val_transform = A.Compose([
+                          A.Resize(img_size,img_size),
+                            A.Normalize (mean=[0.485, 0.456, 0.406],
+                            std=[0.229, 0.224, 0.225]),
                           ])
-
-    train_dataset = CustomDataLoader(data_dir=train_path, mode='train', transform=train_transform)
-    val_dataset = CustomDataLoader(data_dir=val_path, mode='val', transform=val_transform)
+    else:    
+        train_transform = A.Compose([
+                A.Resize(img_size, img_size),
+                A.RandomScale ((0.5, 2.0)),
+                A.RandomCrop(img_size,img_size),
+                A.HorizontalFlip (0.5),
+                A.Normalize (mean=[0.485, 0.456, 0.406],
+                                std=[0.229, 0.224, 0.225]),
+            ToTensorV2(),
+            ])
+        mask_transform = None
+        val_transform = A.Compose([
+                            A.Resize(256, 256) ,
+                            A.Normalize (mean=[0.485, 0.456, 0.406],
+                            std=[0.229, 0.224, 0.225]),
+                            ToTensorV2(),
+                          ])
+    train_dataset = CustomDataLoader(data_dir=train_path, mode='train', transform=train_transform,mask_transform=mask_transform)
+    val_dataset = CustomDataLoader(data_dir=val_path, mode='val', transform=val_transform,mask_transform=mask_transform)
     
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True,  drop_last=True)
-    val_loader = torch.utils.data.DataLoader(dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=False)
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=2, drop_last=True)
+    val_loader = torch.utils.data.DataLoader(dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
     
      ### Model ###    
     model = get_model(args)
@@ -123,7 +139,7 @@ def train(config=None):
                 'flip_direction': 'horizontal'
             }]]
     print("Start training..")
-    
+
     for epoch in range(EPOCHS):
         epoch+=1
         avg_loss = 0
@@ -139,7 +155,7 @@ def train(config=None):
                 output = model(imgs,img_metas,return_loss=False)
             else:
                 output = model(images)
-            if args.network=='hrnet':
+            if args.network=='hrnet' and args.is_upsample :
                 output = F.interpolate(
                             output, (img_size,img_size),
                             mode='bilinear', align_corners=True)
@@ -159,13 +175,14 @@ def train(config=None):
         if args.network.startswith('swin'):
             val_loss, val_mIoU, val_mIoU2, val_mIoU3 = validation_swin(model, val_loader, criterion, device,img_metas)     
         else:
-            val_loss, val_mIoU, val_mIoU2, val_mIoU3  = validation3(model, val_loader, criterion, device,is_hrnet= args.network=='hrnet')
+            val_loss, val_mIoU, val_mIoU2, val_mIoU3  = validation3(model, val_loader, criterion, device,is_hrnet= args.network=='hrnet' and args.is_upsample)
         wandb.log({"loss": avg_loss, "val_loss": val_loss, "val_mIoU": val_mIoU, "val_mIoU2": val_mIoU2, "val_mIoU3": val_mIoU3})
         print(f"\n  loss: {avg_loss:.3f}  val_loss: {val_loss:.3f}  val_mIoU:{val_mIoU:.3f}  val_mIoU2:{val_mIoU2:.3f}  val_mIoU3:{val_mIoU3:.3f}")
         file_name=save_model_name + f'_epoch{epoch}_score1{val_mIoU:.3f}_score2{val_mIoU2:.3f}_score3{val_mIoU3:.3f}.pt'
         now_mIoU = (val_mIoU+val_mIoU2+val_mIoU3) /3  
         
-        if best_val_mIoU < now_mIoU:
+        # if best_val_mIoU < now_mIoU:
+        if val_mIoU3>=0.5 and val_mIoU>=0.4:
             save_model(model, saved_dir="weight", file_name=file_name)
             best_val_mIoU = now_mIoU
             flag=False
@@ -192,8 +209,7 @@ if __name__ == '__main__':
                         nargs='?',
                         choices=['labv3p', 'swin_s','swin_b','swin_t','hrnet'],
                         help='labv3p, swin_s, swin_b (base), swin_t (tiny), hrnet')
-                        
-    parser.add_argument('--model_name', type=str,default='None')
+    parser.add_argument('--is_upsample',action='store_true')
     parser.add_argument('--count',type=int,default=20)
     args = parser.parse_args()
 
@@ -207,34 +223,29 @@ if __name__ == '__main__':
 
     
     parameters_dict = {
-        # 'SEED': {
-        #     'distribution': 'int_uniform',
-        #     'max': 9999,
-        #     'min': 1
-        # },
         'SEED':{
             'values' : [2536]
         },
         'BATCH_SIZE': {
-            'values': [32]
+            'values': [4]
         },
         'ACCUM':{
-            'values': [1,2]
+            'values': [1] #[1,2]
         },
         'LR': {
-            'values': [1e-4,1e-3,1e-5,5e-5,5e-4]
+            'values': [1e-5]#[1e-4,1e-3,1e-5,5e-5,5e-4]
         },
         'Eta_Max':{
-            'values': [1e-8,1e-7]
+            'values': [1e-8],#[1e-8,1e-7]
         },
         'EPOCHS':{
-            'values': [20,40]
+            'values': [40]#[20,40]
         },
         'Optimizer':{
             'value': 'adamw'
         },
         'IMG_SIZE':{
-            'values' : [256]
+            'values' : [1024]
         },
          'project_name':{
             'value': args.project_name

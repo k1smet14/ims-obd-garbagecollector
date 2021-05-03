@@ -1,5 +1,11 @@
 # 안현진
 
+### (05.03) Pseudo data 업로드
+test데이터를 segmentation하여 만든 mask파일 760장이 들어있습니다.<br>
+pseudo_masks.zip 파일을 다운받은 후 압축을 푸셔서, input/data/pseudo_masks 경로로 만들어주세요.<br>
+
+
+
 ### [code]SoftEnsemble.ipynb
 (4.30) 앙상블용 코드 사용하기 쉽게 작성<br>
 (5.01) scaling, TTA 앙상블 추가 (dataloader.py 업데이트 필요)

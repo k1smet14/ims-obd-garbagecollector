@@ -1,0 +1,10 @@
+Any Comment : randomrotate90, h_flip Code of dlv3p resnext101 32x32d
+
+model_name                                                             | batch_size | max_epochs | learning_rate | num_workers 
+new-dlv3p-resnext101-32x32d-stop-rrotate90-h_flip-batch4               | 4         | 50          | 1e-05        | 1 
+colorjitter-brightness(0.4) | randorotate90 | h_flip
+loss_function | optimizer | scheduler
+cross entropy | adam      | N/A 
+
+x seconds per epoch
+saved model at epoch y

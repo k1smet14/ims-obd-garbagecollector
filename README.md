@@ -3,7 +3,8 @@
 ### (05.03) Pseudo data 업로드
 test데이터를 segmentation하여 만든 mask파일 760장이 들어있습니다.<br>
 1. pseudo_masks.zip 파일을 다운받은 후 압축을 푸셔서, input/data/pseudo_masks 경로로 만들어주세요.<br>
-2. pseudo_mask 사용 예제.ipynb 코드를 보시면 PseudoTrainset 클래스가 있습니다. 복사해서 기존의 CustomDataset처럼 사용하시면 됩니다.
+2. pseudo_imgs_path.npy 파일을 다운받으신 후 input/data/pseudo_imgs_path.npy로 위치해주세요.<br>
+3. pseudo_mask 사용 예제.ipynb 코드를 보시면 PseudoTrainset 클래스가 있습니다. 복사해서 기존의 CustomDataset처럼 사용하시면 됩니다.
 
 ### (05.03) [code]KFold_objectNumSplit.ipynb
 이미지당 개체수를 기준으로 5Fold split<br>

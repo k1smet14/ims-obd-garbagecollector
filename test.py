@@ -66,8 +66,14 @@ def main():
     dataset_path = '../input/data'
     test_path = dataset_path + '/test.json'
 
+    #mean, stds of train_all.json 
+    mean=(0.460, 0.440, 0.418)
+    std=(0.211, 0.208, 0.216)
+
     test_transform = A.Compose([
                             A.Resize(256, 256),
+                            # A.CLAHE(p=1.0),
+                            A.Normalize(mean=mean, std=std, max_pixel_value=255.0, p=1.0),
                             ToTensorV2()
                             ])
 
@@ -79,11 +85,11 @@ def main():
                                             collate_fn=collate_fn)
 
     model = smp.DeepLabV3Plus(
-        encoder_name='resnext50_32x4d',
-        encoder_weights='ssl', 
+        encoder_name='timm-regnety_320',
+        encoder_weights='imagenet', 
         classes=12
     )
-    load_model(model, device, saved_dir="models", file_name="deeplabv3plus_resnext50_32x4d.pt")
+    load_model(model, device, saved_dir="models", file_name="deeplabv3plus_regnety_320.pt")
     model.to(device)
     #load_model(model, device, saved_dir, file_name)
     # sample_submisson.csv 열기
@@ -99,7 +105,7 @@ def main():
                                     ignore_index=True)
 
     # submission.csv로 저장
-    submission.to_csv("./submission/deeplabv3plus_resnext50_32x4d.csv", index=False)
+    submission.to_csv("./submission/deeplabv3plus_regnety_320.csv", index=False)
 
 if __name__ == '__main__':
     main()

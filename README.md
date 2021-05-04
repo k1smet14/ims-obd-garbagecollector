@@ -2,8 +2,8 @@
 ### (05.04) K-Fold용 pseudo 데이터 업로드
 pseudo_kfold_all.npy, pseudo_kfold_anns.npy 파일을 다운받습니다. <br>
 1. input/data/ 경로에 두 파일을 위치해주세요.
-2. [code]KFold+Pseudo_example.ipynb 코드를 다운받아 사용하시면 됩니다. (train 함수만 수정 필요)
-3. train 함수에 model save 코드를 꼭 추가해주세요.
+2. [code]KFold+Pseudo_example.ipynb 코드를 다운받아 사용하시면 됩니다.
+3. train 함수에 model save 코드가 있는 점 주의해서 수정해주세요.
 
 
 ### (05.03) Pseudo data 업로드

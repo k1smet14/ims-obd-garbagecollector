@@ -6,3 +6,6 @@
   
 ### inference and submit
   - python inference.py --config_name [config]
+
+### train and submit
+  - python train_submit.py --config_name [config]

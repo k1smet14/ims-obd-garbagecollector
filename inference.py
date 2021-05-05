@@ -30,7 +30,7 @@ def inference(args):
     test_transform = test_transform_module(args.resize)
 
     # get data set
-    dataset_module = getattr(import_module("dataset"), args.dataset)
+    dataset_module = getattr(import_module("dataset"), "CustomDataLoader")
     test_dataset = dataset_module(data_dir=args.test_path, mode='test', transform=test_transform)
 
     # data loader

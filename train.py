@@ -12,7 +12,7 @@ import wandb
 
 import torch
 from torch.utils.data import DataLoader
-from utils import label_accuracy_score
+from utils import *
 
 import numpy as np
 import pandas as pd
@@ -53,9 +53,11 @@ def train(args):
     val_transform = val_transform_module(args.resize)
     
     # dataset
-    dataset_module = getattr(import_module("dataset"), args.dataset)
-    train_dataset = dataset_module(data_dir=args.train_path, mode='train', transform=train_transform)
-    val_dataset = dataset_module(data_dir=args.val_path, mode='val', transform=val_transform)
+    train_dataset_module = getattr(import_module("dataset"), args.dataset)
+    train_dataset = train_dataset_module(data_dir=args.train_path, transform=train_transform)
+    
+    val_dataset_module = getattr(import_module("dataset"), "CustomDataLoader")
+    val_dataset = val_dataset_module(data_dir=args.val_path, mode='val', transform=val_transform)
 
     # data loader
     train_loader = DataLoader(
@@ -82,7 +84,7 @@ def train(args):
     # training
     print('* Start Training...')
 
-    #criterion_module = getattr(import_module("torch.nn"), args.loss)
+    # criterion_module = getattr(import_module("torch.nn"), args.loss)
     # custom loss를 사용하고 싶으면 아래처럼 사용
     criterion_module = getattr(import_module("loss"), args.loss)   
     criterion = criterion_module()
@@ -93,14 +95,14 @@ def train(args):
     scheduler_module = getattr(import_module("scheduler"), args.scheduler)
     scheduler = scheduler_module(optimizer, T_0=args.epochs, eta_max=args.max_learning_rate, T_up=2, gamma=0.5)
 
-    best_loss = 9999999
+    best_mIoU = -1
     for epoch in range(args.epochs):
         print('-' * 80)
         print(f'* Epoch {epoch+1}')
         start_time = time.time()
         
         model.train()
-        for step, (images, masks, _) in enumerate(train_loader):
+        for step, (images, masks) in enumerate(train_loader):
             images = torch.stack(images)        # (batch, channel, height, width)
             masks = torch.stack(masks).long()   # (batch, channel, height, width)
 
@@ -114,24 +116,28 @@ def train(args):
             optimizer.step()
 
             if (step+1)%25==0:
-                print(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], Loss: {loss.item():.4f} , LR:{scheduler.get_lr()[0]:6f}')
+                print(f'Epoch [{epoch+1}/{args.epochs}], Step [{step+1}/{len(train_loader)}], Loss: {loss.item():.4f}, LR:{scheduler.get_lr()[0]:6f}')
 
         scheduler.step()
 
         if (epoch+1) % args.val_every == 0:
             print()
-            avg_loss, avg_mIoU = validation(model, val_loader, criterion, device)
+            avg_loss, avg_mIoU1, avg_mIoU2 = validation(model, val_loader, criterion, device)
             train_time = time.time()-start_time
             print(f"\n* epoch {epoch+1} training and validation time : {train_time:.4f} sec \n")
 
             # wandb logging
-            wandb.log({"time": train_time, "train_loss": loss.item(), "val_loss": avg_loss, "val_mIoU": avg_mIoU})
+            wandb.log({"time": train_time, "train_loss": loss.item(), "val_loss": avg_loss, "val_mIoU1": avg_mIoU1, "val_mIoU2": avg_mIoU2})
             
-            if avg_loss < best_loss:
+            if avg_mIoU2 > best_mIoU:
                 print(f'Best performance at epoch {epoch+1}')
                 print(f'Save model in saved_model/{args.save_file_name}.pt \n')
-                best_loss = avg_loss
+                best_mIoU = avg_mIoU2
                 save_model(model, './saved_model', f'{args.save_file_name}.pt')
+
+            # if epoch>15:
+            #     print(f'Save model at epoch {epoch+1} \n')
+            #     save_model(model, './saved_model', f'{args.save_file_name}_{epoch+1}.pt')
 
 
 def validation(model, data_loader, criterion, device):
@@ -140,8 +146,9 @@ def validation(model, data_loader, criterion, device):
     with torch.no_grad():
         total_loss = 0
         cnt = 0
-        mIoU_list = []
-        for step, (images, masks, _) in enumerate(data_loader):
+        mIoU_list1 = []
+        hist = np.zeros((12, 12))
+        for step, (images, masks) in enumerate(data_loader):
             
             images = torch.stack(images)       # (batch, channel, height, width)
             masks = torch.stack(masks).long()  # (batch, channel, height, width)
@@ -155,13 +162,16 @@ def validation(model, data_loader, criterion, device):
             
             outputs = torch.argmax(outputs, dim=1).detach().cpu().numpy()
 
-            mIoU = label_accuracy_score(masks.detach().cpu().numpy(), outputs, n_class=12)[2]
-            mIoU_list.append(mIoU)
+            mIoU1 = label_accuracy_score1(masks.detach().cpu().numpy(), outputs, n_class=12)[2]
+            mIoU_list1.append(mIoU1)
             
-        avrg_loss = total_loss / cnt
-        print(f'Validation Average Loss: {avrg_loss:.4f}, mIoU: {np.mean(mIoU_list):.4f}')
+            for lt, lp in zip(outputs, masks.detach().cpu().numpy()):
+                hist += fast_hist2(lt.flatten(), lp.flatten(), 12)
 
-    return avrg_loss, np.mean(mIoU_list)
+        avrg_loss = total_loss / cnt
+        print(f'Validation Average Loss: {avrg_loss:.4f}, mIoU1: {np.mean(mIoU_list1):.4f}, mIoU2: {label_accuracy_score2(hist):.4f}')
+
+    return avrg_loss, np.mean(mIoU_list1), label_accuracy_score2(hist)
 
 
 def save_model(model, saved_dir, file_name):

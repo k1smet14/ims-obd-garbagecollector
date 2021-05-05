@@ -146,6 +146,50 @@ class deeplabv3_resnext101(nn.Module):
         out = self.model(x)
         return out
 
+class DeepLabV3Plus_resnext101_32x16d_swsl(nn.Module):
+    def __init__(self, num_classes):
+        super(DeepLabV3Plus_resnext101_32x16d_swsl, self).__init__()
+        self.model = smp.DeepLabV3Plus(
+            encoder_name='resnext101_32x16d',
+            encoder_weights='swsl',
+            classes=num_classes
+        )
+
+    def forward(self, x):
+        out = self.model(x)
+        return out
+
+
+class DeepLabV3Plus_resnext101_32x8d_instagram(nn.Module):
+    def __init__(self, num_classes):
+        super(DeepLabV3Plus_resnext101_32x8d_instagram, self).__init__()
+        self.model = smp.DeepLabV3Plus(
+            encoder_name='resnext101_32x8d',
+            encoder_weights='instagram',
+            classes=num_classes
+        )
+
+    def forward(self, x):
+        out = self.model(x)
+        return out
+
+
+class deeplabv3_notplus_resnext101_32x4d_swsl(nn.Module):
+    def __init__(self, num_classes):
+        super(deeplabv3_notplus_resnext101_32x4d_swsl, self).__init__()
+        self.model = smp.DeepLabV3(
+            encoder_name='resnext101_32x4d',
+            encoder_weights='swsl',
+            classes=num_classes
+        )
+
+    def forward(self, x):
+        out = self.model(x)
+        return out
+
+
+
+
 class deeplabv3_efficientnet_b5(nn.Module):
     def __init__(self, num_classes):
         super(deeplabv3_efficientnet_b5, self).__init__()
@@ -158,6 +202,7 @@ class deeplabv3_efficientnet_b5(nn.Module):
     def forward(self, x):
         out = self.model(x)
         return out
+
 
 
 class PSPNet_resnext101_32x8d(nn.Module):
@@ -186,6 +231,61 @@ class FPN_efficientnet_b5(nn.Module):
     def forward(self, x):
         out = self.model(x)
         return out
+
+
+class PAN_resnext101_32x8d_swsl(nn.Module):
+    def __init__(self, num_classes):
+        super(PAN_resnext101_32x8d_swsl, self).__init__()
+        self.model = smp.PAN(
+            encoder_name='resnext101_32x8d',
+            encoder_weights='swsl',
+            classes=num_classes
+        )
+
+    def forward(self, x):
+        out = self.model(x)
+        return out
+
+class PAN_resnext101_32x16d_swsl(nn.Module):
+    def __init__(self, num_classes):
+        super(PAN_resnext101_32x16d_swsl, self).__init__()
+        self.model = smp.PAN(
+            encoder_name='resnext101_32x16d',
+            encoder_weights='swsl',
+            classes=num_classes
+        )
+
+    def forward(self, x):
+        out = self.model(x)
+        return out
+
+
+class PAN_resnext101_32x8d_instagram(nn.Module):
+    def __init__(self, num_classes):
+        super(PAN_resnext101_32x8d_instagram, self).__init__()
+        self.model = smp.PAN(
+            encoder_name='resnext101_32x8d',
+            encoder_weights='instagram',
+            classes=num_classes
+        )
+
+    def forward(self, x):
+        out = self.model(x)
+        return out
+
+
+class Linknet_resnext101_32x8d_instagram(nn.Module):
+    def __init__(self, num_classes):
+        super(Linknet_resnext101_32x8d_instagram, self).__init__()
+        self.model = smp.Linknet(
+            encoder_name='resnext101_32x8d',
+            encoder_weights='instagram',
+            classes=num_classes
+        )
+
+    def forward(self, x):
+        out = self.model(x)
+        return out 
 
 
 if __name__=='__main__':

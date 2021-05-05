@@ -69,22 +69,23 @@ class F1Loss(nn.Module):
 
 
 # cross entropy + IoU
-def _fast_hist(label_true, label_pred, n_class):
+def fast_hist2(label_true, label_pred, n_class):
     mask = (label_true >= 0) & (label_true < n_class)
     hist = np.bincount(
         n_class * label_true[mask].astype(int) +
         label_pred[mask], minlength=n_class ** 2).reshape(n_class, n_class)
     return hist
 
-def label_accuracy_score(label_trues, label_preds, n_class=12):
-    hist = np.zeros((n_class, n_class))
-    for lt, lp in zip(label_trues, label_preds):
-        hist += _fast_hist(lt.flatten(), lp.flatten(), n_class)
+def label_accuracy_score2(hist):
+    """Returns accuracy score evaluation result.
+      - mean IU
+    """
     with np.errstate(divide='ignore', invalid='ignore'):
         iu = np.diag(hist) / (
             hist.sum(axis=1) + hist.sum(axis=0) - np.diag(hist)
         )
     mean_iu = np.nanmean(iu)
+
     return mean_iu
 
 class IoU_CE_Loss(nn.Module):
@@ -97,7 +98,7 @@ class IoU_CE_Loss(nn.Module):
     def forward(self, preds, truth):
         ce = self.ce(preds, truth)
         preds = torch.argmax(preds.squeeze(), dim=1).detach().cpu().numpy()
-        miou = label_accuracy_score(truth.detach().cpu().numpy(), preds, n_class=self.n_class)
+        miou = label_accuracy_score2(fast_hist2(truth.detach().cpu().numpy(), preds, n_class=self.n_class))
         return (1-miou)*self.rate + ce*(1-self.rate)
 
 

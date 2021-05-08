@@ -1,0 +1,27 @@
+{
+    "dataset_path" : "/opt/ml/input/data/train/train+allx2.tsv",
+    "labeltype_path" : "/opt/ml/input/data/label_type.pkl",
+    "test_data_path" : "/opt/ml/input/data/test/test.tsv",
+
+    "model_name" : "bert-base-multilingual-cased",
+    "preprocess_type" : 0,
+    "tokenize_maxlen" : 100,
+    "seed" : 7,
+    "num_labels" : 42,
+    "save_name" : "original_setting_using_allx2data",
+
+    "save_total_limit" : 30,
+    "save_step" : 1000,
+    "epoch" : 3,
+    "lr" : 5e-5,
+    "train_batch_size" : 64,
+    "warmup_steps" : 500,
+    "weight_decay" : 0.01,
+    "label_smoothing_factor" : 0.5,
+
+    "train_val_split" : 1,
+    "val_size" : 0.2,
+    "val_batch_size" : 64
+
+
+}

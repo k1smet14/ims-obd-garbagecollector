@@ -1,29 +1,16 @@
-# data
-사람 얼굴 이미지 (마스크 쓴 것, 안 쓴 것, 부적절하게 쓴 것)
+### training
+* python train_trainer.py --config_name [config(json)]
+* ex) python train_trainer.py --config_name config_example
 
-# training
+### inference
+* python inference.py --config_name [config(json)] --ckpt_name [saved_model_ckpt]
+* ex) python inference.py --config_name config_example --ckpt_name checkpoint-1000
 
-__python train.py__ 
+### ensemble
+* 코드 상에서 경로 변경 후 앙상블 (soft vote, hard vote)
 
-- config
- 
-  1. --model_name
-  2. --seed
-  3. --age_filter
-  4. --p_val
-  5. --dataset
-  6. --augmentation
-  7. --aug_p
-  8. --resize
-  9. --batch_size
-  10. --valid_batch_size
-  11. --model
-  12. --criterion
-  13. --optimizer
-  14. --lr
-  15. --weight_decay
-  16. --lr_scheduler
-  17. --lr_decay_step
-  18. --epochs
-  19. --print_every
-  20. --data_dir
+### QA task
+* dataset&evaulate_QA : QA task를 위한 데이터 셋 생성과 pipeline을 활용한 간단한 테스트
+* train_QA : QA dataset을 활용하여 학습
+* inference_QA : 실제 inferece하지 않고 한 테스트 데이터에 대해 질문 별 결과만 출력한다. 
+  (결과 확인 후 성능이 좋지 않아 사용 x)

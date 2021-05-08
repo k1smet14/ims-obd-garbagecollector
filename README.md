@@ -3,7 +3,7 @@
 
 # training
 
-python train.py 
+__python train.py__ 
 
 - config
  

@@ -1,0 +1,28 @@
+{
+    "dataset_path" : "/opt/ml/input/data/train/train+allx2.tsv",
+    "labeltype_path" : "/opt/ml/input/data/label_type.pkl",
+    "test_data_path" : "/opt/ml/input/data/test/test.tsv",
+
+    "model_name" : "xlm-roberta-base",
+    "preprocess_type" : 0,
+    "tokenize_maxlen" : 100,
+    "seed" : 7,
+    "num_labels" : 42,
+    "save_name" : "xlm_setting01_allx2",
+
+    "save_total_limit" : 5,
+    "save_step" : 100,
+    "epoch" : 3,
+    "lr" : 1e-5,
+    "train_batch_size" : 16,
+    "val_batch_size" : 16,
+    "warmup_steps" : 300,
+    "weight_decay" : 0.01,
+    "label_smoothing_factor" : 0.5,
+
+    "train_val_split" : 1,
+    "val_size" : 0.1,
+    "val_epoch_size" : 16
+
+
+}

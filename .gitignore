@@ -1,5 +1,9 @@
-weight/*
-wandb/*
-__pycache__/*
-.empty/*
-pretrained/*
+**/weight/*
+**/wandb/*
+**/__pycache__/*
+**/.empty/*
+**/pretrained/*
+**/work_dirs/*
+**/*.egg-info/*
+**/*.pth
+**/*.mp4

@@ -1,32 +1,25 @@
-## Install
-1. `conda install pytorch=1.6.0 cudatoolkit=10.1 torchvision -c pytorch`
+## How to use Mosaic 
+- cfg 파일을 따라가다 아래와 같이 import를 하는데 `'../_base_/datasets/coco_detection.py'` 부분을 `'../_base_/datasets/coco_detection_mosaic.py'`로 변경해주시면 됩니다.
 
-2. `pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.6.0/index.html`
-
-3. `git clone https://github.com/Pstage-Segmentation-Detection/mmdetection_trash.git`
-
-4. `cd mmdetection_trash`
-
-5. `pip install -r requirements.txt`
-
-6. `pip install -v -e .`
-
-7. `apt-get install libgl1-mesa-glx`
-
-8. `jupyter nbextension enable --py widgetsnbextension`
-
-## notebook
-### train
-[faster_rcnn_train.ipynb](https://github.com/Pstage-Segmentation-Detection/mmdetection_trash/blob/master/faster_rcnn_train.ipynb)
-### inference
-[faster_rcnn_inference.ipynb](https://github.com/Pstage-Segmentation-Detection/mmdetection_trash/blob/master/faster_rcnn_inference.ipynb)
-
-## python
-### train
-`python tools/train.py configs/trash/faster_rcnn/faster_rcnn_r50_fpn_1x_trash.py`
-### inference
-`python tools/test.py configs/trash/faster_rcnn/faster_rcnn_r50_fpn_1x_trash.py work_dirs/faster_rcnn_r50_fpn_1x_trash/epoch_12.pth --out work_dirs/faster_rcnn_r50_fpn_1x_trash/epoch_12.pkl`
-### make submission
-`python pkl_to_submission.py --pkl work_dirs/faster_rcnn_r50_fpn_1x_trash/epoch_12.pkl --csv submission.csv`
-### submission file
-`mmdetection_trash > submission.csv`
+```python
+# configs/faster_rcnn/faster_rcnn_r50_fpn_2x_coco_mosaic.py
+_base_ = [
+    '../_base_/models/faster_rcnn_r50_fpn.py',
+    '../_base_/datasets/coco_detection.py',
+    '../_base_/schedules/schedule_1x.py', '../_base_/default_runtime.py'
+]
+```
+- train_pipleline이 아래와 같이 변경되었기 때문에 기존에 `cfg.data.train.pipeline[2]['img_scale'] = (512, 512)`는 `cfg.data.train.pipeline[3]['img_scale'] = (512, 512)` 로 수정해주셔야 합니다.
+```python
+train_pipeline = [
+    dict(type='LoadMultiImageFromFile'),
+    dict(type='LoadMultiAnnotations', with_bbox=True),
+    dict(type='Mosaic'),
+    dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
+    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(type='Normalize', **img_norm_cfg),
+    dict(type='Pad', size_divisor=32),
+    dict(type='DefaultFormatBundle'),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels']),
+]
+```

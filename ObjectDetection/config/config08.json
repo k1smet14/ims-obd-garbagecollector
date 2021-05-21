@@ -1,0 +1,25 @@
+{
+    "annotation" : "/opt/ml/input/data/train_all.json",
+    "val_annotation" : "/opt/ml/input/data/val.json",
+    "test_annotation" : "/opt/ml/input/data/test.json",
+    "data_dir" : "/opt/ml/input/data",
+
+    "config_name" : "faster_rcnn_scnet50_fpn",
+
+    "dataset" : "CustomDataset",
+    "augmentation" : "TrainAugmentation",
+    "model" : "fasterrcnn_scnet50_fpn",
+    "optimizer" : "Adam",
+
+    "seed" : 7,
+    "learning_rate" : 0.0001,
+    "epoch" : 18,
+    "batch_size" : 4,
+    "resize" : [512, 512],
+    "augp" : 0.5,
+    "anchor_sizes" : null,
+    "aspect_ratios" : null,  
+
+    "val_every" : 1,
+    "test_score_threshold" : 0.1
+}

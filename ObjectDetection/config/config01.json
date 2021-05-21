@@ -1,0 +1,25 @@
+{
+    "annotation" : "/opt/ml/input/data/train.json",
+    "val_annotation" : "/opt/ml/input/data/val.json",
+    "test_annotation" : "/opt/ml/input/data/test.json",
+    "data_dir" : "/opt/ml/input/data",
+
+    "config_name" : "faster_rcnn_resnet101_fpn",
+
+    "dataset" : "CustomDataset",
+    "augmentation" : "TrainAugmentation",
+    "model" : "fasterrcnn_resnet101_fpn",
+    "optimizer" : "Adam",
+
+    "seed" : 7,
+    "learning_rate" : 0.0001,
+    "epoch" : 20,
+    "batch_size" : 8,
+    "resize" : [512, 512],
+    "augp" : 0.5,
+    "anchor_sizes" : "None",
+    "aspect_ratios" : "None",  
+    
+    "val_every" : 1,
+    "test_score_threshold" : 0.1
+}

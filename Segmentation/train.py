@@ -78,18 +78,20 @@ def train():
 
     train_transform = A.Compose([
                                 A.Resize(256, 256),
-                                #A.HorizontalFlip(p=0.5),
-                                # A.VerticalFlip(p=0.5),
-                                #A.RandomRotate90(p=0.5),
-                                #A.CLAHE(p=0.5),
-                                A.Normalize(mean=mean, std=std, max_pixel_value=255.0, p=1.0),
+                                A.HorizontalFlip(p=0.5),
+                                A.RandomRotate90(p=0.5),
+                                #A.RandomScale((0.25, 1.0), p=1.0),
+                                #A.PadIfNeeded(512, 512),
+                                A.CLAHE(p=0.5),
+                                A.ToFloat(max_value=255),
+                                #A.Normalize(mean=mean, std=std, max_pixel_value=255.0, p=1.0),
                                 ToTensorV2()
                                 ])
 
     val_transform = A.Compose([
                             A.Resize(256, 256),
-                            # A.CLAHE(p=1.0),
-                            A.Normalize(mean=mean, std=std, max_pixel_value=255.0, p=1.0),
+                            A.ToFloat(max_value=255),
+                            #A.Normalize(mean=mean, std=std, max_pixel_value=255.0, p=1.0),
                             ToTensorV2()
                             ])
 
@@ -122,21 +124,24 @@ def train():
     #     classes=12
     # )
     # model = smp.DeepLabV3Plus(
-    #     encoder_name='timm_-agenet',
+    #     encoder_name='timm-resnest50d',
+    #     encoder_weights='imagenet',
     #     classes=12
     # )
-    # model = smp.UnetPlusPlus(
-    #     encoder_name='timm-efficientnet-b0',
-    #     encoder_weights='noisy-student',
-    #     classes=12
-    # )
+    model = smp.DeepLabV3Plus(
+        encoder_name='resnext50_32x4d',
+        encoder_weights='swsl',
+        encoder_output_stride=16,
+        decoder_atrous_rates=(12, 24, 36),
+        classes=12
+    )
 
     # encoder = EfficientNet.encoder('efficientnet-b5', pretrained=True)
     # model = UNet3Plus_efficientnet(encoder, n_classes=12)
 
     # encoder = timm.create_model('swsl_resnext50_32x4d', pretrained=True)
     # model = UNet3Plus_resnext50_32x4d(encoder, n_classes=12)
-    model = UNet3Plus_resnext50_32x4d(n_classes=12)
+    # model = UNet3Plus_resnext50_32x4d(n_classes=12)
 
     model.to(device)
     wandb.watch(model)
@@ -173,8 +178,8 @@ def train():
     optimizer = AdamP(model.parameters(), lr=learning_rate)
     # optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     # scheduler = CosineAnnealingWarmupRestarts(optimizer, first_cycle_steps=500, max_lr=5e-5, min_lr=5e-7, warmup_steps=100)
-    #scheduler = get_cosine_with_hard_restarts_schedule_with_warmup(optimizer, 300, 6540, 3)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 10000)
+    scheduler = get_cosine_with_hard_restarts_schedule_with_warmup(optimizer, 300, 6540, 3)
+    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 10000)
 
     # scaler = GradScaler()
     print('Start training..')
@@ -187,7 +192,7 @@ def train():
         for step, (images, masks, _) in tqdm(enumerate(train_loader)):
             images = torch.stack(images)       # (batch, channel, height, width)
             masks = torch.stack(masks).long()  # (batch, channel, height, width)
-            
+            #print(type(images), len(images))
             # gpu 연산을 위해 device 할당
             images, masks = images.to(device), masks.to(device)
             
@@ -226,7 +231,7 @@ def train():
                 print('Best performance at epoch: {}'.format(epoch + 1))
                 print('Save model in', saved_dir)
                 best_mIoU = val_mIoU2
-                save_model(model, saved_dir, file_name='UNet3Plus_resnext50_32x4d.pt')
+                save_model(model, saved_dir, file_name='deeplabv3plus_resnext50_32x4d_nonNorm.pt')
         
         print('finish')
 

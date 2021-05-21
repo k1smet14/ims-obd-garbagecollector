@@ -3,7 +3,3 @@
 
 ## 안현진
 https://github.com/bcaitech1/p3-ims-obd-garbagecollector/tree/HyeonJin
-
-
-## 김익재
-https://github.com/bcaitech1/p3-ims-obd-garbagecollector/tree/IkJae

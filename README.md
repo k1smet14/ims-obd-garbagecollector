@@ -11,7 +11,14 @@ https://github.com/bcaitech1/p3-ims-obd-garbagecollector/tree/DongWoo
 https://github.com/bcaitech1/p3-ims-obd-garbagecollector/tree/IkJae
 
 ## 송민기
-https://github.com/bcaitech1/p3-ims-obd-garbagecollector/tree/MinKi
+- [Object Detection](https://github.com/bcaitech1/p3-ims-obd-garbagecollector/tree/MinKi/object_detection)
+  - Content
+    - mosaic with mmdetection
+    - swin transformer
+    - manual class mix
+- [Segmentation](https://github.com/bcaitech1/p3-ims-obd-garbagecollector/tree/MinKi/segmentation)
+  - Content
+    - swin transformer   
 
 ## 최재하
 https://github.com/bcaitech1/p3-ims-obd-garbagecollector/tree/JaeHa

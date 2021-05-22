@@ -1,30 +1,21 @@
-<<<<<<< HEAD
-### training
-* python train_trainer.py --config_name [config(json)]
-* ex) python train_trainer.py --config_name config_example
+# How to use
 
-### inference
-* python inference.py --config_name [config(json)] --ckpt_name [saved_model_ckpt]
-* ex) python inference.py --config_name config_example --ckpt_name checkpoint-1000
+### Check the model
+``` bash
+python model.py --config_name [config]
+```
 
-### ensemble
-* 코드 상에서 경로 변경 후 앙상블 (soft vote, hard vote)
+### Train
+``` bash
+python train.py --config_name [config]
+``` 
 
-### QA task
-* dataset&evaulate_QA : QA task를 위한 데이터 셋 생성과 pipeline을 활용한 간단한 테스트
-* train_QA : QA dataset을 활용하여 학습
-* inference_QA : 실제 inferece하지 않고 한 테스트 데이터에 대해 질문 별 결과만 출력한다. 
-  (결과 확인 후 성능이 좋지 않아 사용 x)
-=======
-### check the model
-  - python model.py --config_name [config]
-  
-### train
-  - python train.py --config_name [config]
-  
-### inference and submit
-  - python inference.py --config_name [config]
+### Inference and Submit
+``` bash
+python inference.py --config_name [config]
+```
 
-### train and submit
-  - python train_submit.py --config_name [config]
->>>>>>> 9356084e6ecedf5494fba04028fb7383c975830a
+### Train and Submit
+``` bash
+python train_submit.py --config_name [config]
+```

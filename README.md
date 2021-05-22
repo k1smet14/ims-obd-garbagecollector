@@ -5,7 +5,8 @@
 https://github.com/bcaitech1/p3-ims-obd-garbagecollector/tree/HyeonJin
 
 ## 김동우
-https://github.com/bcaitech1/p3-ims-obd-garbagecollector/tree/DongWoo
+- [SemanticSegmentation](https://github.com/bcaitech1/p3-ims-obd-garbagecollector/tree/DongWoo/SemanticSegmentation)
+- [ObjectDetection](https://github.com/bcaitech1/p3-ims-obd-garbagecollector/tree/DongWoo/ObjectDetection)
 
 ## 김익재
 https://github.com/bcaitech1/p3-ims-obd-garbagecollector/tree/IkJae
